@@ -1,0 +1,6 @@
+output/
+a
+a.cpp
+*.o
+*.exe
+*.out
