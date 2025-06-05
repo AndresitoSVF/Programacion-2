@@ -33,14 +33,14 @@
     <tbody>
       <tr>
         <td>constructor</td>
-        <td><input type="checkbox" checked></input></td>
+        <td>✓</td>
         <td><input type="checkbox" checked></input></td>
         <td><input type="checkbox" checked></input></td>
       </tr>
       <tr>
         <td>invertir</td>
         <td><input type="checkbox" ></input></td>
-        <td><input type="checkbox" ></input></td>
+        <td>x</td>
         <td><input type="checkbox" ></input></td>
       </tr>
       <tr>
@@ -146,13 +146,13 @@
         <td><input type="checkbox" ></input></td>
       </tr>
       <tr>
-        <td></td>
+        <td>encolar</td>
         <td><input type="checkbox" ></input></td>
         <td><input type="checkbox" ></input></td>
         <td><input type="checkbox" ></input></td>
       </tr>
       <tr>
-        <td></td>
+        <td>apilar</td>
         <td><input type="checkbox" ></input></td>
         <td><input type="checkbox" ></input></td>
         <td><input type="checkbox" ></input></td>
