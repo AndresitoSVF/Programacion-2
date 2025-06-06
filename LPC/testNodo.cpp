@@ -93,7 +93,7 @@ std::string intToString(int n) {
 void testConstructor() {
     Lista<int> lista;
     assert(lista.esVacia());
-    assert(lista.getSize() == 0);
+    assert(lista.getLongitud() == 0);
     cout << "Test constructor: OK\n";
 }
 
@@ -106,7 +106,7 @@ void testInsercionPosiciones() {
     lista.insertar("medio", 1);
     lista.insertar("final", -1);
     
-    assert(lista.getSize() == 4);
+    assert(lista.getLongitud() == 4);
     assert(lista.consultar(0) == "inicio");
     assert(lista.consultar(1) == "medio");
     assert(lista.consultar(2) == "base");
@@ -125,13 +125,13 @@ void testEliminacionCompleja() {
     
     // Eliminar alternados
     assert(lista.eliminar(5) == 10);
-	//lista.mostrarLista();
+	//lista.mostrar();
     assert(lista.eliminar(0) == 0);
-	//lista.mostrarLista();
-    assert(lista.eliminar(lista.getSize()-1) == 18);
-	//lista.mostrarLista();
+	//lista.mostrar();
+    assert(lista.eliminar(lista.getLongitud()-1) == 18);
+	//lista.mostrar();
     // Verificar estado intermedio
-    assert(lista.getSize() == 7);
+    assert(lista.getLongitud() == 7);
     assert(lista.consultar(0) == 2);
     assert(lista.consultar(5) == 14);
     
@@ -145,14 +145,14 @@ void testConstructorCopia() {
     original.insertar(1.618);
     
     Lista<double> copia(&original);
-	//cout << copia.getSize() << endl;
-    assert(copia.getSize() == 3);
+	//cout << copia.getLongitud() << endl;
+    assert(copia.getLongitud() == 3);
     assert(copia.consultar(0) == 3.14);
     assert(copia.consultar(2) == 1.618);
     
     // Modificar original no afecta copia
     original.eliminar(0);
-    assert(copia.getSize() == 3);
+    assert(copia.getLongitud() == 3);
     
     cout << "Test constructor copia: OK\n";
 }
@@ -182,7 +182,7 @@ void testCasosBorde() {
     
     assert(lista.eliminar(2) == 'B');
     assert(lista.eliminar(0) == 'A');
-    assert(lista.getSize() == 1);
+    assert(lista.getLongitud() == 1);
     
     // Vaciar y volver a usar
     lista.vaciar();
@@ -224,7 +224,7 @@ int main_list() {
     testConstructorCopia();
     testManejoMemoria();
     testCasosBorde();
-    //testTiposComplejos();
+    testTiposComplejos();
     
     cout << "\nTODAS LAS PRUEBAS PASARON CON EXITO!\n";
     return 0;

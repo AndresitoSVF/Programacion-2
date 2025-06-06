@@ -10,7 +10,7 @@ all: run
 run: $(target)
 	./$(target)
 
-$(target): wb.o
+$(target): testNodo.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.o: %.cpp
