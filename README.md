@@ -42,13 +42,13 @@
       </tr>
       <tr>
         <td>copiar</td>
-        <td></td>
+        <td>✓</td>
         <td></td>
         <td></td>
       </tr>
       <tr>
         <td>consultar</td>
-        <td></td>
+        <td>✓</td>
         <td></td>
         <td></td>
       </tr>
@@ -60,31 +60,31 @@
       </tr>
       <tr>
         <td>getLongitud</td>
-        <td></td>
+        <td>✓</td>
         <td></td>
         <td></td>
       </tr>
       <tr>
         <td>eliminar</td>
-        <td></td>
+        <td>✓</td>
         <td></td>
         <td></td>
       </tr>
       <tr>
         <td>insertar</td>
-        <td></td>
+        <td>✓</td>
         <td></td>
         <td></td>
       </tr>
       <tr>
         <td>vaciar</td>
-        <td></td>
+        <td>✓</td>
         <td></td>
         <td></td>
       </tr>
       <tr>
         <td>esVacia</td>
-        <td></td>
+        <td>✓</td>
         <td></td>
         <td></td>
       </tr>
@@ -102,7 +102,7 @@
       </tr>
       <tr>
         <td>destruir</td>
-        <td></td>
+        <td>✓</td>
         <td></td>
         <td></td>
       </tr>
