@@ -1,4 +1,26 @@
 #include "Nodo.h"
+#include <iostream>
+#include <cstddef>
+
+// Constructor por defecto
+template <class Element>
+Nodo<Element>::Nodo() : sig(NULL), info(Element()) {}
+
+// Constructor de copia
+// Crea un nuevo nodo con la misma información que otro nodo
+template <class Element>
+Nodo<Element>::Nodo(const Nodo *otro) : info(Element(otro->info)) {
+    if (otro->sig)
+    {
+        sig = new Nodo<Element>(otro->sig);
+    }
+    else
+    {
+        sig = NULL;
+    }
+    
+}
+
 // Constructor con información y siguiente nodo
 // Crea un nuevo nodo con la información dada y el siguiente nodo dado
 template <class Element>
@@ -31,4 +53,24 @@ void Nodo<Element>::setInfo(Element info) {
 template <class Element>
 void Nodo<Element>::setSig(Nodo *sig) {
     this->sig = sig;
+}
+
+template <class Element>
+std::ostream& operator << (std::ostream& os, const Nodo<Element>* nodo) {
+    if (nodo == NULL) {
+        os << "( Nodo vacío )";
+        return os;
+    }
+
+    os << "( actual info: " << nodo->info << ", sig: "; 
+    nodo = nodo->sig;
+    while (nodo != NULL) {
+        os << nodo->info;
+        nodo = nodo->sig;
+        if (nodo) {
+            os << ", ";
+        }
+    }
+    os << ")";
+    return os;
 }

@@ -22,16 +22,24 @@ void pruebaCopia() {
     cout << "\n--- Prueba de constructor de copia ---\n";
 
     Nodo<int> nodoOriginal(30);
+    nodoOriginal.setSig(new Nodo<int>(40));  // Nodo siguiente
+    Nodo<int> *aux = nodoOriginal.getSig();
+    aux->setSig(new Nodo<int>(50));
     Nodo<int> nodoCopia(&nodoOriginal);  // Usando el constructor de copia
 
-    cout << "Nodo original info: " << nodoOriginal.getInfo() << endl;
-    cout << "Nodo copia info: " << nodoCopia.getInfo() << endl;
+    cout /* << "Nodo original info: " << nodoOriginal.getInfo() */ << endl << endl << endl << endl;
+   /*  cout << "Nodo copia info: " << nodoCopia.getInfo() << endl; */
+    cout << "Nodo original: " << &nodoOriginal << endl;
+    cout << "Nodo copia: " << &nodoCopia << endl;
+    aux->setInfo(99);
+    cout << "Nodo original siguiente cambiado: " << &nodoOriginal << endl << "el copia no debe cambiar: " << &nodoCopia << endl;
+
 
     // Modificamos el original para ver si afecta a la copia
     nodoOriginal.setInfo(99);
     cout << "Después de modificar el original...\n";
     cout << "Nodo original info: " << nodoOriginal.getInfo() << endl;
-    cout << "Nodo copia info (debe permanecer igual): " << nodoCopia.getInfo() << endl;
+    cout << "Nodo copia info (debe permanecer igual): " << nodoCopia.getInfo() << endl << endl;
 }
 
 void pruebaListaEncadenada() {
@@ -72,7 +80,7 @@ void pruebaCasosLimite() {
     Nodo<int> *nodo2 = new Nodo<int>(100, nodo1);
     delete nodo1;  // Eliminamos nodo1
 
-    cout << "Acceso a nodo eliminado (esperar comportamiento indefinido o crash): " << nodo2->getSig() << endl;
+    //cout << "Acceso a nodo eliminado (esperar comportamiento indefinido o crash): " << nodo2->getSig() << endl;
 
     // Liberamos memoria restante
     delete nodo2;
@@ -144,7 +152,7 @@ void testConstructorCopia() {
     original.insertar(2.71);
     original.insertar(1.618);
     
-    Lista<double> copia(&original);
+    Lista<double> copia(original);
 	//cout << copia.getLongitud() << endl;
     assert(copia.getLongitud() == 3);
     assert(copia.consultar(0) == 3.14);
@@ -238,12 +246,44 @@ int main_node() {
     return 0;
 }
 
+
+
 int main() {
 	cout << "Ejecutando pruebas de Nodo...\n";
 	main_node();
 	
 	cout << "\nEjecutando pruebas de Lista...\n";
-	main_list();
-	
+	//main_list();
+	Lista<int> lista{};
+    lista.insertar(1);
+    lista.insertar(2);
+    lista.insertar(3);
+    lista.insertar(4);
+    lista.mostrar();
+    lista.ordenar(Lista<int>::ordenAscendente);
+    lista.mostrar();
+    cout << lista.estaElemento(3) << " - " << lista.estaElemento(6) << endl;
+    lista.modificar(5,1).modificar(6,0).modificar(4,0).modificar(4,9,lista.getLongitud()).mostrar();
+    lista.modificar(7, 0).mostrar();
+    cout << "lista: " << lista;
+
+    const Lista<int> l{lista};
+    //l[0];
+    l.mostrar();
+    //cout << l.consultar(1) << l.esVacia() << l.getLongitud();
+    l[2];
+    cout << lista[2] << " " << lista << endl;
+
+    cout << "Lista original: " << lista << endl;
+    cout << "Lista invertida: " << lista.invertir() << endl;
+    cout << "Lista desplazada a la derecha: " << (lista += 2) << endl;
+    cout << "Lista desplazada a la izquierda: " << (lista += -3) << endl;
+    cout << "Lista restaurada: " << (lista += 1) << endl;
+    //cout << "Lista concatenada con sí misma: " << (lista + lista) << endl;
+    cout << "son iguales ella consigo misma? " << (lista == lista) << endl << "son iguales lista y l? " << (lista == l) << endl << "son iguales l y lista invertida? " << (lista.invertir() == l) << endl;
+    cout << lista.sublista(1, 3) << endl;
+    cout << lista << endl;
+    cout << "Lista despues de eliminar 2: " << (lista -= 2) << endl;
+    cout << "Lista despues de eliminar 3: " << (lista -= 3) << endl;
 	return 0;
 }
