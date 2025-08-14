@@ -2,6 +2,15 @@
 #include <iostream>
 #include <cstddef>
 #include <cassert>
+#include <sstream>
+#include <string>
+
+template <typename T>
+std::string to_string(const T& value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
 
 
 /// @brief Constructor por defecto de la clase Lista.
@@ -19,18 +28,12 @@ Lista<Element>::Lista() : head(NULL), tail(NULL), size(0)
 template <class Element>
 Lista<Element>::Lista(const Lista &otra) : head(NULL), tail(NULL), size(0)
 {
-    Nodo<Element> *temp = otra.head;
-    while (temp != NULL) {
-        Nodo<Element> *nuevo = new Nodo<Element>(temp->getInfo());
-        if (head == NULL) {
-            head = nuevo;
-            tail = nuevo;
-        } else {
-            tail->setSig(nuevo);
-            tail = nuevo;
+    if (otra.head != NULL) {
+        Nodo<Element>* temp = otra.head;
+        while (temp != NULL) {
+            this->insertar(temp->getInfo(), size);
+            temp = temp->getSig();
         }
-        temp = temp->getSig();
-        size++;
     }
 }
 
@@ -39,22 +42,12 @@ Lista<Element>::Lista(const Lista &otra) : head(NULL), tail(NULL), size(0)
 /// @tparam Element Tipo de los elementos de la lista.
 template <class Element>
 Lista<Element>::~Lista() { 
-    destroy(); 
+    vaciar(); 
 }
 
-/// @brief Libera toda la memoria de los nodos de la lista y la reinicializa como vacía. hace exactamente lo mismo que el destructor y que vaciar() xd.
-/// @tparam Element Tipo de los elementos de la lista.
-template <class Element>
-void Lista<Element>::destroy() {
-    vaciar();
-    head = NULL;
-    tail = NULL;
-    size = 0;
-}
 
 /// @brief Vacía la lista, eliminando todos sus elementos y liberando la memoria.
 /// @tparam Element Tipo de los elementos de la lista.
-/// @note Este método es un alias para `destroy()`.
 template <class Element>
 void Lista<Element>::vaciar() {
     while (size > 0) {
@@ -71,32 +64,56 @@ void Lista<Element>::vaciar() {
 /// @return Una referencia a la lista modificada, permitiendo el encadenamiento de llamadas.
 /// @throw std::out_of_range Si la posición es negativa o mayor que el tamaño de la lista.
 template <class Element>
-Lista<Element>& Lista<Element>::insertar(Element info, int pos)
+Lista<Element>& Lista<Element>::insertar(const Element &info, int pos)
 {
     if (pos < 0 || pos > size) {
-        throw std::out_of_range("Posición inválida de inserción");
+        throw std::out_of_range("Posición inválida de insercion. Se intentó insertar en " + 
+                              to_string(pos) + 
+                              " en una lista de longitud " + 
+                               to_string(size) +  ".");;
     }
     Nodo<Element> *nuevo = new Nodo<Element>(info);
-    if (pos == 0) {
-        nuevo->setSig(head);
+    if (size == 0) {
         head = nuevo;
-        if (size == 0) {
-            tail = nuevo;
-        }
+        tail = nuevo;
+    }
+    // Caso 2: Insertar al inicio
+    else if (pos == 0) {
+        nuevo->setSig(head);
+        head->setAnt(nuevo);
+        head = nuevo;
     }
     else if (pos == size)  // Si la posición es igual al tamaño de la lista, se inserta al final
     {
         tail->setSig(nuevo);
+        nuevo->setAnt(tail);
         tail = nuevo;
     }
     else  // Insertar en el medio de la lista
     {
-        Nodo<Element> *temp = head;
-        for (int i = 0; i < pos - 1; i++) {
-            temp = temp->getSig();
+        Nodo<Element> *temp;
+        if (pos <= size / 2){
+            temp = head;
+            for (int i = 0; i < pos - 1; i++) {
+                temp = temp->getSig();
+            }
+            Nodo<Element>* siguiente = temp->getSig();
+            nuevo->setSig(siguiente);
+            nuevo->setAnt(temp);
+            temp->setSig(nuevo);
+            siguiente->setAnt(nuevo);
         }
-        nuevo->setSig(temp->getSig());
-        temp->setSig(nuevo);
+        else {
+            temp = tail;
+            for (int i = size - 1; i > pos; i--) {
+                temp = temp->getAnt();
+            }
+
+            nuevo->setAnt(temp->getAnt());
+            nuevo->setSig(temp);
+            temp->getAnt()->setSig(nuevo);
+            temp->setAnt(nuevo);
+        }
     }
     size++;
     return *this;
@@ -110,19 +127,68 @@ Lista<Element>& Lista<Element>::insertar(Element info, int pos)
 template <class Element>
 Element Lista<Element>::consultar(int pos) const
 {
-    if (pos < 0 || pos >= size || size == 0) {
-        throw std::out_of_range("Posición inválida de consulta");
+    if (pos < 0 || pos >= size) {
+        throw std::out_of_range("Posición inválida de consulta. Se intentó consultar en " + 
+                              to_string(pos) + 
+                              " en una lista de longitud " + 
+                               to_string(size) +  ".");;
     }
 
     if (pos == size-1) {
         return tail->getInfo();
     }
 
-    Nodo<Element> *temp = head;
-    for (int i = 0; i < pos; i++) {
-        temp = temp->getSig();
+    if (pos <= size / 2){
+        Nodo<Element> *temp = head;
+        for (int i = 0; i < pos; i++) {
+            temp = temp->getSig();
+        }
+        return temp->getInfo();
     }
-    return temp->getInfo();
+    else {
+        Nodo<Element> *temp = tail;
+        pos = size - 1 - pos;
+        for (int i = 0; i < pos; i++) {
+            temp = temp->getAnt();
+        }
+        return temp->getInfo();
+        
+    }
+
+}
+
+template <class Element>
+Element& Lista<Element>::consultarRef(int pos)
+{
+    if (pos < 0 || pos >= size) {
+        if (pos < 0 || pos >= size) {
+        throw std::out_of_range("Posición inválida de consulta. Se intentó consultar en " + 
+                              to_string(pos) + 
+                              " en una lista de longitud " + 
+                               to_string(size) +  ".");;
+    }
+    }
+
+    if (pos == size-1) {
+        return tail->getInfo();
+    }
+
+    if (pos <= size / 2){
+        Nodo<Element> *temp = head;
+        for (int i = 0; i < pos; i++) {
+            temp = temp->getSig();
+        }
+        return temp->getInfo();
+    }
+    else {
+        Nodo<Element> *temp = tail;
+        pos = size - 1 - pos;
+        for (int i = 0; i < pos; i++) {
+            temp = temp->getAnt();
+        }
+        return temp->getInfo();
+        
+    }
 }
 
 /// @brief Elimina el elemento en la posición especificada de la lista.
@@ -131,37 +197,51 @@ Element Lista<Element>::consultar(int pos) const
 /// @return El elemento que ha sido eliminado de la lista.
 /// @throw std::out_of_range Si la lista está vacía o la posición está fuera de rango.
 template <class Element>
-Element Lista<Element>::eliminar(int pos) 
+void Lista<Element>::eliminar(int pos)
 {
-    if (pos < 0 || pos >= size || size == 0) {
-        throw std::out_of_range("Posición inválida de eliminación");
+    if (pos < 0 || pos >= size) {
+        throw std::out_of_range("Posición inválida de eliminacion. Se intentó eliminar en " + 
+                              to_string(pos) + 
+                              " en una lista de longitud " + 
+                               to_string(size) +  ".");
     }
 
-    Nodo<Element> *temp = head;
-    Element info;
+    Nodo<Element>* aEliminar = head;
+
+    // Caso 1: Eliminar el primer nodo
     if (pos == 0) {
         head = head->getSig();
-        info = temp->getInfo();
-        delete temp;
-        if (size == 1) {
+        if (head != NULL) {
+            head->setAnt(NULL);
+        } else { // Si la lista se queda vacía
             tail = NULL;
         }
     }
-    else {
-        Nodo<Element> *prev = NULL;
-        for (int i = 0; i < pos; i++) {
-            prev = temp;
-            temp = temp->getSig();
-        }
-        prev->setSig(temp->getSig());
-        info = temp->getInfo();
-        delete temp;
-        if (pos == size - 1) {
-            tail = prev;
+    // Caso 2: Eliminar el último nodo
+    else if (pos == size - 1) {
+        aEliminar = tail;
+        tail = tail->getAnt();
+        if (tail != NULL) {
+            tail->setSig(NULL);
+        } else { // Si la lista se queda vacía
+            head = NULL;
         }
     }
+    // Caso 3: Eliminar un nodo en el medio
+    else {
+        // Encontrar el nodo a eliminar iterando desde el inicio
+        for (int i = 0; i < pos; i++) {
+            aEliminar = aEliminar->getSig();
+        }
+        Nodo<Element>* anterior = aEliminar->getAnt();
+        Nodo<Element>* siguiente = aEliminar->getSig();
+
+        anterior->setSig(siguiente);
+        siguiente->setAnt(anterior);
+    }
+    
+    delete aEliminar;
     size--;
-    return info;
 }
 
 /// @brief Verifica si la lista está vacía.
@@ -201,78 +281,32 @@ void Lista<Element>::mostrar() const{
 template <class Element>
 Lista<Element>& Lista<Element>::copiar(const Lista &otra)
 {
-    if (this == &otra) {//assert
-        return *this;
-    }
-    vaciar();
-
-    Nodo<Element> *temp  = otra.head;
-    while (temp != NULL) {
-        Nodo<Element> *nuevo = new Nodo<Element>(temp->getInfo());
-        if (head == NULL) {
-            head = nuevo;
-            tail = nuevo;
-        } else {
-            tail->setSig(nuevo);
-            tail = nuevo;
+    if (otra.head != NULL) {
+        Nodo<Element>* temp = otra.head;
+        while (temp != NULL) {
+            this->insertar(temp->getInfo(), size);
+            temp = temp->getSig();
         }
-        temp = temp->getSig();
     }
-    size = otra.size;
     return *this;
 }
 
 /// @brief Verifica si un elemento específico está presente en la lista.
 /// @tparam Element Tipo de los elementos de la lista.
 /// @param info El elemento a buscar. Se pasa como referencia constante para eficiencia.
-/// @return `true` si el elemento se encuentra en la lista, `false` en caso contrario.
+/// @return `pos` si el elemento se encuentra en la lista, `-1` en caso contrario.
 template <class Element>
-bool Lista<Element>::estaElemento(const Element& info) const{
+int Lista<Element>::estaElemento(const Element& info) const{
     Nodo<Element> *iter = head;
+    int pos = -1;
     while (iter != NULL) {
+        pos++;
         if (iter->getInfo() == info) {
-            return true;
+            return pos;
         }
         iter = iter->getSig();
     }
-    return false;
-}
-
-/// @brief Elimina un número específico de ocurrencias de un elemento dado de la lista.
-/// @tparam Element Tipo de los elementos de la lista.
-/// @param info El elemento a eliminar.
-/// @param ocurrencias El número máximo de veces que se debe eliminar el elemento.
-/// @return Una referencia a la lista modificada, permitiendo el encadenamiento de llamadas.
-/// @note Si la cantidad de ocurrencias a eliminar es mayor que las existentes, se eliminarán todas.
-template <class Element>
-Lista<Element>& Lista<Element>::eliminar(const Element& info, int ocurrencias) {
-    Nodo<Element>* act = head;
-    Nodo<Element>* ant = NULL;
-
-    while (act != NULL && ocurrencias > 0) {
-        if (act->getInfo() == info) {
-            Nodo<Element>* temp = act;
-            if (act == head) {
-                head = head->getSig();
-                if (head == NULL) {
-                    tail = NULL; // Si la lista queda vacía
-                }
-            } else {
-                ant->setSig(act->getSig());
-                if (act == tail) {
-                    tail = ant; // Actualiza el tail si es necesario
-                }
-            }
-            act = act->getSig(); // Avanza al siguiente nodo
-            delete temp; // Libera memoria del nodo eliminado
-            size--;
-            ocurrencias--;
-        } else {
-            ant = act;
-            act = act->getSig(); // Avanza al siguiente nodo
-        }
-    }
-    return *this;
+    return -1;
 }
 
 /// @brief Modifica las ocurrencias de un elemento `anterior` por un `nuevo` elemento.
@@ -340,9 +374,11 @@ Lista<Element>& Lista<Element>::invertir()
     while (act != NULL) {
         sig = act->getSig();
         act->setSig(prev);
+        act->setAnt(sig);
         prev = act;
         act = sig;
     }
+    
     head = prev;
     return *this;
 }
@@ -360,7 +396,6 @@ Lista<Element>& Lista<Element>::ordenar(const Condicion condicion) {
     }
 
     bool ordena;
-
     do {
         ordena = false;
         Nodo<Element>* current = head;
@@ -369,16 +404,18 @@ Lista<Element>& Lista<Element>::ordenar(const Condicion condicion) {
         while (current != NULL && current->getSig() != NULL) {
             next = current->getSig();
 
-            if (condicion(current->getInfo(), next->getInfo())) { // Si no están en el orden deseado
+            // Verificar si los elementos están en el orden incorrecto
+            if (condicion(current->getInfo(), next->getInfo())) {
+                // Intercambiar los datos de los nodos
                 Element temp = current->getInfo();
                 current->setInfo(next->getInfo());
                 next->setInfo(temp);
                 ordena = true;
             }
-            current = current->getSig();
+            current = next;  // Avanzar al siguiente nodo
         }
-        std::cout << "Ordenando: " << *this << std::endl; // Mostrar el estado de la lista en cada iteración
     } while (ordena);
+    
     return *this;
 }
 
@@ -448,20 +485,11 @@ Lista<Element>& Lista<Element>::concatenar(const Lista<Element>& otra) {
         return *this;
     }
     Nodo<Element>* iter = otra.head;
-    if (size == 0) {
-        head = new Nodo<Element>(iter->getInfo());
-        tail = head;
-        iter = iter->getSig();
-    }
     
     while (iter != NULL) {
-        Nodo<Element>* nuevo = new Nodo<Element>(iter->getInfo());
-        tail->setSig(nuevo);
-        tail = tail->getSig();
+        insertar(iter->getInfo(), size);
         iter = iter->getSig();
     }
-
-    size += otra.size;
     return *this;
 }
 
@@ -474,162 +502,166 @@ void Lista<Element>::error(const std::string &mensaje) const {
     assert(false && mensaje.c_str());
 }
 
+/// @brief Posicion donde se encuentra el elemento más pequeño siguiendo la condicion
+/// por defecto: cMin(a,b) => a < b
+/// @tparam Element 
+/// @param condicion 
+/// @return 
+template <class Element>
+template <typename Condicion>
+int Lista<Element>::min(const Condicion condicion)  // indice donde se encuentra el valor mas bajo de los elementos usando el criterio condicion
+{
+    if (esVacia()) {
+        return -1;
+    }
+    
+    Nodo<Element> *iter = head;
+    Element minValor = head->getInfo();
+    int minIndice = 0;
+    int pos = 0;
+    while (iter != NULL) {
+        if (condicion(iter->getInfo(), minValor)) {
+            minValor = iter->getInfo();
+            minIndice = pos;
+        }
+        iter = iter->getSig();
+        pos++;
+    }
+    return minIndice;
+}
+
+/// @brief Posicion donde se encuentra el elemento más grande siguiendo la condicion
+/// por defecto: cMax(a,b) => a > b
+/// @tparam Element 
+/// @param condicion 
+/// @return 
+template <class Element>
+template <typename Condicion>
+int Lista<Element>::max(const Condicion condicion) // indice donde se encuentra el valor mas alto de los elementos usando el criterio condicion
+{
+    if (esVacia()) {
+        return -1;
+    }
+    
+    Nodo<Element> *iter = head;
+    Element maxValor = head->getInfo();
+    int maxIndice = 0;
+    int pos = 0;
+    while (iter != NULL) {
+        if (condicion(iter->getInfo(), maxValor)) {
+            maxValor = iter->getInfo();
+            maxIndice = pos;
+        }
+        iter = iter->getSig();
+        pos++;
+    }
+    return maxIndice;
+}
+
+template <class Element>
+bool Lista<Element>::cMin(const Element& a, const Element& b) {
+    return a < b;
+}
+
+template <class Element>
+bool Lista<Element>::cMax(const Element& a, const Element& b) {
+    return a > b;
+}
+
+
+
+/// O(n)
 /// @brief Desplaza los elementos de la lista hacia la derecha.
 /// @tparam Element Tipo de los elementos de la lista.
 /// @param cantidad Número de posiciones a desplazar.
 /// @return Una referencia a la lista modificada, permitiendo el encadenamiento de llamadas
+/// [1,2,3,4,5] -> [5,1,2,3,4] (el ultimo pasa a ser el primero.)
 template <class Element>
-Lista<Element>& Lista<Element>::shiftDer (int cantidad) {
+Lista<Element>& Lista<Element>::shiftDer(int cantidad) {
     if (cantidad < 0) {
-        return *this -= -cantidad; // Desplazamiento a la izquierda
+        return shiftIzq(-cantidad);
     }
-
-    if (size <= 1) {
-        throw std::out_of_range("No se puede desplazar una lista vacía");
-    }
-
-    cantidad = cantidad % size; // Evita desplazamientos innecesarios
-
-
-    Nodo<Element>* ant = NULL;
-    Nodo<Element>* act = head;
-    while (cantidad > 0 && act != NULL) {
-        ant = act;
-        act = act->getSig();
-        cantidad--;
-    }
-
-    if (ant == NULL) {
-        return *this; // No hay elementos para desplazar
-    }
-    else
-    {
-        ant->setSig(NULL); // Corta la conexión anterior
-        tail->setSig(head); // Conecta el final al inicio
-        head = act; // Nuevo inicio
-        tail = ant; // Actualiza el final
-    }
-    
-    return *this;
-}
-
-/// @brief Desplaza los elementos de la lista hacia la izquierda.
-/// @tparam Element Tipo de los elementos de la lista.
-/// @param cantidad Número de posiciones a desplazar.
-/// @return Una referencia a la lista modificada, permitiendo el encadenamiento de llamadas
-template <class Element>
-Lista<Element>& Lista<Element>::shiftIzq (int cantidad) {
-    if (cantidad < 0) {
-        return *this += -cantidad; // Desplazamiento a la derecha
-    }
-
-    if (size <= 1) {
-        throw std::out_of_range("No se puede desplazar una lista vacía");
-    }
-
-    cantidad = cantidad % size; // Evita desplazamientos innecesarios
-    cantidad = size - cantidad; // Desplazamiento a la izquierda
-    Nodo<Element>* ant = NULL;
-    Nodo<Element>* act = head;
-    while (cantidad > 0 && act != NULL) {
-        ant = act;
-        act = act->getSig();
-        cantidad--;
-    }
-
-    if (ant == NULL) {
-        return *this; // No hay elementos para desplazar
-    }
-    else
-    {
-        ant->setSig(NULL); // Corta la conexión anterior
-        tail->setSig(head); // Conecta el final al inicio
-        head = act; // Nuevo inicio
-        tail = ant; // Actualiza el final
-    }
-
-    return *this;
-}
-
-/// @brief Elimina todas las ocurrencias duplicadas de elementos en la lista,
-///        dejando solo la primera ocurrencia de cada valor.
-/// @tparam Element Tipo de los elementos de la lista.
-/// @return Una referencia a la lista modificada, permitiendo el encadenamiento de llamadas.
-/// @note Este método recorre la lista y elimina los nodos que contienen valores duplicados,
-///       manteniendo solo la primera aparición de cada elemento.
-template <class Element>
-Lista<Element>& Lista<Element>::eliminarRepetidos () {
     if (size <= 1) {
         return *this;
     }
 
-    Nodo<Element>* act = head;
-    while (act != NULL) {
-        Nodo<Element>* sig = act->getSig();
-        Nodo<Element>* ant = act;
-
-        while (sig != NULL) {
-            if (sig->getInfo() == act->getInfo()) {
-                ant->setSig(sig->getSig());
-                delete sig;
-                sig = ant->getSig();
-                size--;
-                if (sig == NULL)
-                {
-                    tail = ant;
-                }
-            } else {
-                ant = sig;
-                sig = sig->getSig();
-            }
-        }
-        act = act->getSig();
+    cantidad %= size;
+    if (cantidad == 0) {
+        return *this;
     }
+
+    // Encuentra el nodo que se convertira en el nuevo tail.
+    // Esto es el nodo en la posicion `size - 1 - cantidad` de la lista original.
+    Nodo<Element>* nuevoTail = tail;
+    for (int i = 0; i < cantidad; i++) {
+        nuevoTail = nuevoTail->getAnt();
+    }
+    
+    // El nuevo head es el nodo siguiente al nuevo tail.
+    Nodo<Element>* nuevoHead = nuevoTail->getSig();
+
+    // Reconfigurar los enlaces de la lista.
+    head->setAnt(tail);
+    tail->setSig(head);
+    
+    nuevoHead->setAnt(NULL);
+    nuevoTail->setSig(NULL);
+    
+    head = nuevoHead;
+    tail = nuevoTail;
+
     return *this;
 }
 
+//O(n)
+/// @brief Desplaza los elementos de la lista hacia la izquierda.
+/// @tparam Element Tipo de los elementos de la lista.
+/// @param cantidad Número de posiciones a desplazar.
+/// @return Una referencia a la lista modificada, permitiendo el encadenamiento de llamadas
+/// [1,2,3,4] [2,3,4,1] 1dplz (el primero pasa a ser el ultimo.)
+template <class Element>
+Lista<Element>& Lista<Element>::shiftIzq(int cantidad) {
+    if (cantidad < 0) {
+        return shiftDer(-cantidad);
+    }
+    if (size <= 1) {
+        return *this;
+    }
+    cantidad %= size;
+    if (cantidad == 0) {
+        return *this;
+    }
+
+    // Encuentra el nodo que se convertira en el nuevo tail.
+    // Este es el nodo en la posicion `cantidad - 1` de la lista original.
+    Nodo<Element>* nuevoTail = head;
+    for (int i = 0; i < cantidad - 1; i++) {
+        nuevoTail = nuevoTail->getSig();
+    }
+    
+    // El nuevo head es el nodo siguiente al nuevo tail.
+    Nodo<Element>* nuevoHead = nuevoTail->getSig();
+
+    // Reconfigurar los enlaces de la lista.
+    head->setAnt(tail);
+    tail->setSig(head);
+    
+    nuevoHead->setAnt(NULL);
+    nuevoTail->setSig(NULL);
+    
+    head = nuevoHead;
+    tail = nuevoTail;
+
+    return *this;
+}
 // --- Implementación de Operadores ---
-
-/// @brief Sobrecarga del operador de concatenación para unir dos listas.
-template <class Element>
-Lista<Element> Lista<Element>::operator | (const Lista<Element>& otra) const {
-    Lista<Element> resultado;
-    resultado.copiar(*this);
-    resultado.concatenar(otra);
-    return resultado.eliminarRepetidos(); // Elimina duplicados
-}
-
-/// @brief Sobrecarga del operador de suma para agregar un elemento al final de la lista.
-/// @tparam Element Tipo de los elementos de la lista.
-/// @param otro Elemento a agregar.
-/// @return Una nueva lista con el elemento agregado.
-template <class Element>
-Lista<Element> Lista<Element>::operator + (const Element& otro) const {
-    Lista<Element> resultado;
-    resultado.copiar(*this);
-    resultado.insertar(otro, resultado.getLongitud());
-    return resultado;
-}
-
-/// @brief Sobrecarga del operador de resta para eliminar un elemento de la lista todas las veces que aparece.
-/// @tparam Element Tipo de los elementos de la lista.
-/// @param otro Elemento a eliminar.
-/// @return Una nueva lista con el elemento eliminado.
-template <class Element>
-Lista<Element> Lista<Element>::operator - (const Element& otro) const {
-    Lista<Element> resultado;
-    resultado.copiar(*this);
-    resultado.eliminar(otro, size); // Elimina todas las ocurrencias de 'otro'
-    return resultado;
-}
-
 
 /// @brief Sobrecarga del operador de post-incremento.
 /// @tparam Element Tipo de los elementos de la lista.
 /// @param  
 /// @return Una referencia a la lista actual.
 /// @note Desplaza los elementos de la lista hacia la derecha conservando todos los elementos.
-/// @note [1,2,3]++ -> [2,3,1]
+/// @note [1,2,3,4,5] -> [5,1,2,3,4] (el ultimo pasa a ser el primero.)
 template <class Element>
 Lista<Element>& Lista<Element>::operator++(int) {
     return shiftDer(1); // Desplazamiento a la derecha
@@ -639,75 +671,10 @@ Lista<Element>& Lista<Element>::operator++(int) {
 /// @tparam Element Tipo de los elementos de la lista.
 /// @return Una referencia a la lista actual.
 /// @note Desplaza los elementos de la lista hacia la izquierda conservando todos los elementos.
-/// @note [1,2,3]-- -> [3,1,2]
+/// @note [1,2,3,4] [2,3,4,1] 1dplz (el primero pasa a ser el ultimo.)
 template <class Element>
 Lista<Element>& Lista<Element>::operator--(int) {
     return shiftIzq(1); // Desplazamiento a la izquierda
-}
-
-/// @brief Sobrecarga del operador de suma para agregar un elemento al final de la lista.
-/// @note actua sobre la lista actual, no crea una nueva lista.
-template <class Element>
-Lista<Element>& Lista<Element>::operator += (const Element& otro) {
-    return insertar(otro, size); // Inserta al final
-}
-
-/// @brief Sobrecarga del operador de resta para eliminar un elemento de la lista todas las veces que aparece.
-/// @note actua sobre la lista actual, no crea una nueva lista.
-
-template <class Element>
-Lista<Element>& Lista<Element>::operator -= (const Element& otro) {
-    eliminar(otro, size); // Elimina todas las ocurrencias de 'otro'
-    return *this; // Retorna la lista modificada
-}
-
-/// @brief  Sobrecarga del operador de pre-incremento.
-///         Desplaza los elementos de la lista hacia la derecha y elimina el primer elemento.
-/// @tparam Element Tipo de los elementos de la lista.
-/// @return Una referencia a la lista actual.
-template <class Element>
-Lista<Element>& Lista<Element>::operator ++ () {
-    // Pre incremento: desplazar a la derecha y eliminar el primer elemento
-    if (size == 0) {
-        throw std::out_of_range("No se puede incrementar una lista vacía");
-    } else {
-        Nodo<Element>* temp = head;
-        head = head->getSig();
-        if (head == NULL) {
-            tail = NULL; // Si la lista queda vacía
-        }
-        delete temp;
-        size--;
-    }
-    return *this;
-}
-
-/// @brief  Sobrecarga del operador de pre-decremento.
-///         Desplaza los elementos de la lista hacia la izquierda y elimina el último elemento.
-/// @tparam Element Tipo de los elementos de la lista.
-/// @return Una referencia a la lista actual.
-template <class Element>
-Lista<Element>& Lista<Element>::operator -- () {
-    // Pre decremento: desplazar a la izquierda y eliminar el último elemento
-    if (size == 0) {
-        throw std::out_of_range("No se puede decrementar una lista vacía");
-    } else {
-        if (size == 1) {
-            delete head; // Si solo hay un elemento, lo eliminamos
-            head = NULL;
-            tail = NULL;
-        } else {
-            Nodo<Element>* temp = head;
-            while (temp->getSig() != tail) {
-                temp = temp->getSig(); // Avanza hasta el penúltimo nodo
-            }
-            delete tail; // Elimina el último nodo
-            tail = temp; // Actualiza el tail
-            tail->setSig(NULL); // Corta la conexión al último nodo eliminado
-        }
-        size--;
-    }
-    return *this;
 }
 
 /// @brief Sobrecarga del operador de inserción de flujo para imprimir la lista.
@@ -716,23 +683,25 @@ Lista<Element>& Lista<Element>::operator -- () {
 /// @param lista Referencia constante a la lista que se va a imprimir.
 /// @return Una referencia al objeto `ostream` modificado.
 /// @note Imprime la lista en formato `[elemento1, elemento2, ..., elementoN]` o `[Vacia]`.
-template <class Element> // Esta plantilla es para la función, no para la clase
-std::ostream& operator << (std::ostream& os, const Lista<Element>& lista) {
-    if (lista.size <= 0) { // Usa el método público esVacia() si está disponible
-        os << "[ ]";
+template <class Element> 
+std::ostream& operator<<(std::ostream& os, const Lista<Element>& lista) {
+     if (lista.esVacia()) {
+        os << "[ (vacia) ]";
         return os;
     }
 
-    Nodo<Element>* current = lista.head; 
-    os << "[";
-    while (current != nullptr) {
-        os << current->getInfo(); // si se usan estructuras raras que no se pueden imprimir lloro
-        if (current->getSig() != nullptr) {
+    Nodo<Element>* current = lista.head;
+    os << "[ ";
+
+    while (current != NULL) {
+        os << current->getInfo();
+        current = current->getSig();
+        if (current != NULL) {
             os << ", ";
         }
-        current = current->getSig();
     }
-    os << "]";
+    
+    os << " ]";
     return os;
 }
 
@@ -744,10 +713,8 @@ std::ostream& operator << (std::ostream& os, const Lista<Element>& lista) {
 ///       como `miLista[0]`. Reutiliza el método `consultar()`.
 /// @throw std::out_of_range Si el índice está fuera de rango.
 template <class Element>
-Element Lista<Element>::operator [] (const int indice) const {
-    return consultar(indice);
-
-    
+Element& Lista<Element>::operator [] (const int indice) {
+    return consultarRef(indice);
 }
 
 
@@ -789,36 +756,14 @@ Lista<Element>& Lista<Element>::operator = (const Lista<Element>& otra) {
     if (this == &otra) {
         return *this;
     }
-    destroy(); // Limpia la lista actual
-    copiar(otra); // Copia los elementos de otra lista
+
+    this->vaciar();
+    
+    Nodo<Element>* temp = otra.head;
+    while (temp != NULL) {
+        this->insertar(temp->getInfo(), this->size);
+        temp = temp->getSig();
+    }
+    
     return *this;
-}
-
-/// @brief Sobrecarga del operador de intersección de listas.
-/// @tparam Element Tipo de los elementos de la lista.
-/// @param otra Referencia constante a la otra lista con la que se va a intersectar.
-/// @return Una nueva lista que contiene los elementos en común entre ambas listas.
-template <class Element>
-Lista<Element> Lista<Element>::operator & (const Lista<Element>& otra) const{
-    Lista<Element> resultado;
-    if (this == &otra) {
-        resultado.copiar(*this); // retorna una copia porque sino la cago
-        return resultado.eliminarRepetidos(); // Elimina duplicados
-    }
-
-    Lista<Element> otraAux(otra);
-    otraAux.eliminarRepetidos();
-
-    Lista<Element> aux(*this);
-    aux.eliminarRepetidos();
-
-    Nodo<Element>* iter1 = head;
-    while (iter1 != NULL) {
-        if (otraAux.estaElemento(iter1->getInfo())) {
-            resultado.insertar(iter1->getInfo(), resultado.getLongitud());
-        }
-        iter1 = iter1->getSig();
-    }
-
-    return resultado;
 }

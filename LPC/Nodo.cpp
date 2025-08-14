@@ -4,73 +4,36 @@
 
 // Constructor por defecto
 template <class Element>
-Nodo<Element>::Nodo() : sig(NULL), info(Element()) {}
+Nodo<Element>::Nodo() : sig(NULL), ant(NULL),info() {}
 
-// Constructor de copia
-// Crea un nuevo nodo con la misma información que otro nodo
+// Constructor con elemento
 template <class Element>
-Nodo<Element>::Nodo(const Nodo *otro) : info(Element(otro->info)) {
-    if (otro->sig)
-    {
-        sig = new Nodo<Element>(otro->sig);
-    }
-    else
-    {
-        sig = NULL;
-    }
-    
-}
-
-// Constructor con información y siguiente nodo
-// Crea un nuevo nodo con la información dada y el siguiente nodo dado
-template <class Element>
-Nodo<Element>::Nodo(Element info, Nodo *sig) : sig(sig), info(Element(info)) {}
+Nodo<Element>::Nodo(const Element &info, Nodo *sig, Nodo *ant) : sig(sig), ant(ant), info(info) {}
 
 
-// Métodos de acceso y modificación
 // Devuelve la información del nodo
 template <class Element>
-Element Nodo<Element>::getInfo() {
-    return info;
-}
+Element& Nodo<Element>::getInfo() { return info;}
 
-// Devuelve el siguiente nodo
+
 // Devuelve un puntero al siguiente nodo
 template <class Element>
-Nodo<Element> *Nodo<Element>::getSig() {
-    return sig;
-}
+Nodo<Element> *Nodo<Element>::getSig() { return sig;}
+
+
+// Devuelve un puntero al anterior nodo
+template <class Element>
+Nodo<Element> *Nodo<Element>::getAnt() { return ant;}
 
 // Establece la información del nodo
-// Establece la información del nodo a la dada
+
 template <class Element>
-void Nodo<Element>::setInfo(Element info) {
-    this->info = info;
-}
+void Nodo<Element>::setInfo(const Element &info) { this->info = info;}
 
 // Establece el siguiente nodo
-// Establece el siguiente nodo a la dada
 template <class Element>
-void Nodo<Element>::setSig(Nodo *sig) {
-    this->sig = sig;
-}
+void Nodo<Element>::setSig(Nodo *sig) { this->sig = sig;}
 
+// Establece el nodo anterior
 template <class Element>
-std::ostream& operator << (std::ostream& os, const Nodo<Element>* nodo) {
-    if (nodo == NULL) {
-        os << "( Nodo vacío )";
-        return os;
-    }
-
-    os << "( actual info: " << nodo->info << ", sig: "; 
-    nodo = nodo->sig;
-    while (nodo != NULL) {
-        os << nodo->info;
-        nodo = nodo->sig;
-        if (nodo) {
-            os << ", ";
-        }
-    }
-    os << ")";
-    return os;
-}
+void Nodo<Element>::setAnt(Nodo *ant) { this->ant = ant;}

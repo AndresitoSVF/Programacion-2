@@ -1,6 +1,6 @@
 target = RUN
 CC = g++
-CFLAGS = -Wall -Wextra -std=c++98
+CFLAGS = -march=native -O3 -Wall -Wextra -std=c++98
 LDFLAGS = -lm -lpthread
 
 .PHONY: all clean run cleanall

@@ -5,15 +5,16 @@ class Nodo
 {
 private:
     Nodo *sig;
+    Nodo *ant;
     Element info;
 public:
     Nodo();
-    Nodo(const Nodo *otro);
-    Nodo(Element info, Nodo *sig = NULL);
-    Element getInfo();
+    Nodo(const Element &info, Nodo *sig = NULL, Nodo * ant = NULL);
+    Element& getInfo();
     Nodo *getSig();
-    void setInfo(Element info);
+    Nodo *getAnt();
+    void setInfo(const Element &info);
     void setSig(Nodo *sig);
-    template <typename T> friend std::ostream& operator << (std::ostream& os, const Nodo<T>* nodo);
+    void setAnt(Nodo *ant);
 };
 #include "Nodo.cpp"

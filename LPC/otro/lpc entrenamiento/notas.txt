@@ -1,0 +1,15 @@
+-O3 -s
+borrar -g y opciones innecesarias del makefile
+cambiar c++11 por c++98 despues de terminar debuggeo
+borrar archivos innecesarios
+
+funciones de entrada utiles:
+cin.get() 
+cin.peek()
+cin.ignore(numIgnorados, delimiter)
+getline(cin, buffer, delimiter)
+cin.getline(buffer, size)
+
+
+si quieres usar listUtils agrega esta linea al List.cpp reemplazando T por el tipo deseado
+template void ListUtils::readVertical(List<List<T> > lists);
