@@ -3,8 +3,11 @@ CC = g++
 INC_PATHS = -I. -I./Trees
 CFLAGS = $(INC_PATHS) -march=native -O3 -Wall -Wextra
 LDFLAGS = -lm
-MAIN = testArbolN
-HEADERS = ArbolN.h NodoAN.h
+MAIN = 
+#testArbolBB
+#testRecorridosAB
+#testArbolN
+#testArbolB
 
 .PHONY: all clean run cleanall
 

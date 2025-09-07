@@ -2,6 +2,21 @@
 #include <iostream>
 #include <list>
 
+template <class Element>
+void mostrarLista(std::list<Element> &l) {
+    if (l.empty()) {
+        std::cout << "[ ]";
+        return;
+    }
+    std::cout << "[ ";
+    for (typename std::list<Element>::iterator it = l.begin(); it != l.end(); it++)
+    {
+        std::cout << *it << " ";
+    }
+    std::cout << "]"; 
+}
+
+
 template<class Element>
 // pre, pos, in
 void mostrar3Recorridos(std::list<Element> l1, std::list<Element> l2, std::list<Element> l3) {
@@ -36,7 +51,7 @@ int main() {
 	}  
 	ArbolBin<int> a;   
 	a.preorden(lInorden, lPreorden);
-	
+	a.mostrarArbol();
 	std::cout << "profundidad:" << a.getProfundidad() << std::endl;
 
 	std::list<int> lRPos1 = a.recorrerPostorden(); 
@@ -47,6 +62,7 @@ int main() {
 
 	std::cout << "Crear postorden" << std::endl;
 	a.postorden(lRIn1, lRPos1);
+	a.mostrarArbol();
 	std::cout << "profundidad:" << a.getProfundidad() << std::endl;
 	 
 	std::list<int> lRPos2 = a.recorrerPostorden();

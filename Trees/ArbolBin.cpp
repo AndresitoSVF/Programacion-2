@@ -2,62 +2,39 @@
 #include <list>
 #include <cstddef>
 #include <iostream>
-//#include <unordered_map>
+#include <unordered_map>
 
-/* template <class Element>
-void mostrarLista(std::list<Element> &l) {
-    if (l.empty()) {
-        std::cout << "[ ]";
-        return;
-    }
-	std::cout << "[ ";
-	for (typename std::list<Element>::iterator it = l.begin(); it != l.end(); it++)
-	{
-		std::cout << *it << " ";
-	}
-	std::cout << "]"; 
+template <class Element>
+void ArbolBin<Element>::mostrarArbol() {
+    mostrarArbol(raiz);
 }
 
 template <class Element>
-void mostrarLista(std::list<Element> &listaInorden, typename std::list<Element>::iterator iteradorInicioInorden, typename std::list<Element>::iterator iteradorFinInorden) {
-    if (iteradorFinInorden == iteradorInicioInorden) {
-        std::cout << "[ ]";
+void ArbolBin<Element>::mostrarArbol(NodoAB<Element> *nodo) {
+    if (nodo == NULL) {
         return;
     }
-	std::cout << "[ ";
-	while (iteradorInicioInorden != iteradorFinInorden) {
-        std::cout << *iteradorInicioInorden << " ";
-        iteradorInicioInorden++;
-    }
-	std::cout << "]"; 
-}
 
-template <class Element>
-void mostrarLista(std::unordered_map<Element, int> &inordenMap, std::list<Element> &l, int i, int f) {
-    if (l.empty() || i > f) {
-        std::cout << "[ ]";
-        return;
+    if (nodo->getHijoIzq() != NULL){
+        std::cout << nodo->getHijoIzq()->getInfo();
+    } else {
+        std::cout << " * ";
     }
-	std::cout << "[ ";
-    int k = 0;
-	for (typename std::list<Element>::iterator it = l.begin(); it != l.end(); it++)
-	{
-        if (inordenMap[*it] >= i && inordenMap[*it] <= f) {
-            std::cout << *it << " ";
-        }
-        k++;
-	}
-	std::cout << "]"; 
-}
+    
+    std::cout << " <- [ " << nodo->getInfo() << " ] -> " ;
 
-template <class Element>
-void mostrarEnCreacion(Element act, std::unordered_map<Element, int> &inordenMap, std::list<Element> &l, int i, int m, int f) {
-    mostrarLista(inordenMap,l, i, m - 1);
-    std::cout << " <-[" << act << "]-> "; 
-    mostrarLista(inordenMap, l, m + 1, f);
+    if (nodo->getHijoDer() != NULL){
+        std::cout << nodo->getHijoDer()->getInfo();
+    } else {
+        std::cout << " * ";
+    }
+
     std::cout << std::endl;
+
+    mostrarArbol(nodo->getHijoIzq());
+    mostrarArbol(nodo->getHijoDer());
 }
- */
+
 template <class Element>
 NodoAB<Element>* ArbolBin<Element>::copiarNodos(NodoAB<Element> *raiz) {
     NodoAB<Element>* nodoAct = NULL;
@@ -78,7 +55,7 @@ ArbolBin<Element>::ArbolBin() : raiz(NULL), profundidad(0) {}
 template <class Element>
 ArbolBin<Element>::ArbolBin(const Element &info, const ArbolBin<Element> &A1, const ArbolBin<Element> &A2) {
     this->raiz = new NodoAB<Element>(info);
-    this->profundidad = 1 + std::max(A1.profundidad, A2.profundidad);
+    this->profundidad = 1 + max(A1.profundidad, A2.profundidad);
     this->raiz->setHijoIzq(copiarNodos(A1.raiz));
     this->raiz->setHijoDer(copiarNodos(A2.raiz));
 }
@@ -200,110 +177,128 @@ void ArbolBin<Element>::recorrerPostorden(std::list<Element> &resultado, NodoAB<
     }
 }
 
+// creación ..
 
-
-// creación
 template <class Element>
 void ArbolBin<Element>::postorden(std::list<Element> &listaInorden, std::list<Element> &listaPostorden) {
     if (listaInorden.size() != listaPostorden.size()){
         throw std::runtime_error("Las listas que forman el arbol tienen longitudes distintas");
     }
+
     vaciar();
+
+    if (listaInorden.empty()) {
+        return; 
+    }
 
     typename std::list<Element>::reverse_iterator iteradorPostorden = listaPostorden.rbegin();
     std::unordered_map<Element, int> inordenMap;
     int i = 0;
+    
     for (typename std::list<Element>::iterator it = listaInorden.begin(); it != listaInorden.end(); it++) {
         inordenMap[*it] = i;
         i++;
     }
 
     int p = 0;
-    this->raiz = crearPostorden(inordenMap, listaPostorden, iteradorPostorden, p, 0, listaInorden.size() - 1);
+    this->raiz = new NodoAB<Element>(*iteradorPostorden); 
+    iteradorPostorden++;
+    crearPostorden(this->raiz, inordenMap, listaPostorden, iteradorPostorden, p, 0, listaInorden.size() - 1);
     this->profundidad = p;
 }
 
 template <class Element>
-// incio -> 0
-// fin -> listaPostorden.size() - 1
-NodoAB<Element>* ArbolBin<Element>::crearPostorden(std::unordered_map<Element, int> &inordenMap,
-                                                std::list<Element> &listaPostorden, 
-                                                typename std::list<Element>::reverse_iterator &iteradorPostorden, 
-                                                int &profundidad,
-                                                int inicio,
-                                                int fin) {
-    NodoAB<Element>* nodoAct = NULL;
-    int i = 0;
-    if (listaPostorden.rend() != iteradorPostorden && !(inicio > fin)) {
-        
-        int profundidadIzq = 0, profundidadDer = 0;
-        
-        nodoAct = new NodoAB<Element>(*iteradorPostorden);
-        i = inordenMap[*iteradorPostorden];
+void ArbolBin<Element>::crearPostorden(NodoAB<Element>* nodoPadre,
+                                       std::unordered_map<Element, int> &inordenMap,
+                                       std::list<Element> &listaPostorden, 
+                                       typename std::list<Element>::reverse_iterator &iteradorPostorden, 
+                                       int &profundidad,
+                                       int inicio,
+                                       int fin) {
+    int i = inordenMap[nodoPadre->getInfo()];
+    
+    int profundidadIzq = 0, profundidadDer = 0;
 
+    if (i < fin && iteradorPostorden != listaPostorden.rend()){
+        NodoAB<Element>* nuevoNodo = new NodoAB<Element>(*iteradorPostorden);
+        nodoPadre->setHijoDer(nuevoNodo);
         iteradorPostorden++;
-
-        /*  */
-
-        nodoAct->setHijoDer(crearPostorden(inordenMap, listaPostorden, iteradorPostorden, profundidadDer, i + 1, fin));
-        nodoAct->setHijoIzq(crearPostorden(inordenMap, listaPostorden, iteradorPostorden, profundidadIzq, inicio, i - 1));
-
-        profundidad = 1 + std::max(profundidadIzq, profundidadDer);
+        crearPostorden(nuevoNodo, inordenMap, listaPostorden, iteradorPostorden, profundidadDer, i + 1, fin);
     }
-    return nodoAct;
-} 
+    
+    if (inicio < i && iteradorPostorden != listaPostorden.rend()){
+        NodoAB<Element>* nuevoNodo = new NodoAB<Element>(*iteradorPostorden);
+        nodoPadre->setHijoIzq(nuevoNodo);
+        iteradorPostorden++;
+        crearPostorden(nuevoNodo, inordenMap, listaPostorden, iteradorPostorden, profundidadIzq, inicio, i - 1);
+    }
+
+    profundidad = 1 + max(profundidadIzq, profundidadDer);
+}
 
 template <class Element>
 void ArbolBin<Element>::preorden(std::list<Element> &listaInorden, std::list<Element> &listaPreorden) {
     if (listaInorden.size() != listaPreorden.size()){
         throw std::runtime_error("Las listas que forman el arbol tienen longitudes distintas");
     }
+
     vaciar();
 
+    if (listaInorden.empty()) {
+        return; 
+    }
 
     typename std::list<Element>::iterator iteradorPreorden = listaPreorden.begin();
     std::unordered_map<Element, int> inordenMap;
     int i = 0;
-
+    
     for (typename std::list<Element>::iterator it = listaInorden.begin(); it != listaInorden.end(); it++) {
         inordenMap[*it] = i;
         i++;
     }
 
     int p = 0;
-    this->raiz = crearPreorden(inordenMap, listaPreorden, iteradorPreorden, p, 0, listaInorden.size() - 1);
+    this->raiz = new NodoAB<Element>(*iteradorPreorden); 
+    iteradorPreorden++;
+    crearPreorden(this->raiz, inordenMap, listaPreorden, iteradorPreorden, p, 0, listaInorden.size() - 1);
     this->profundidad = p;
 }
 
+
 template <class Element>
-// incio -> 0
-// fin -> listaPreorden.size() - 1
-NodoAB<Element>* ArbolBin<Element>::crearPreorden(std::unordered_map<Element, int> &inordenMap,
-                                                std::list<Element> &listaPreorden, 
-                                                typename std::list<Element>::iterator &iteradorPreorden, 
-                                                int &profundidad,
-                                                int inicio,
-                                                int fin) {
-    NodoAB<Element>* nodoAct = NULL;
-    int i = 0;
-    if (listaPreorden.end() != iteradorPreorden && !(inicio > fin)) {
-        
-        int profundidadIzq = 0, profundidadDer = 0;
+void ArbolBin<Element>::crearPreorden(NodoAB<Element>* nodoPadre,
+                                       std::unordered_map<Element, int> &inordenMap,
+                                       std::list<Element> &listaPreorden, 
+                                       typename std::list<Element>::iterator &iteradorPreorden, 
+                                       int &profundidad,
+                                       int inicio,
+                                       int fin) {
 
-        nodoAct = new NodoAB<Element>(*iteradorPreorden);
-        i = inordenMap[*iteradorPreorden];
-
-        iteradorPreorden++;
-
-        /*  */
-
-        nodoAct->setHijoIzq(crearPreorden(inordenMap, listaPreorden, iteradorPreorden, profundidadIzq, inicio, i - 1));
-        nodoAct->setHijoDer(crearPreorden(inordenMap, listaPreorden, iteradorPreorden, profundidadDer, i + 1, fin));
-
-        profundidad =  1 + std::max(profundidadIzq, profundidadDer) ;
+    if (inicio > fin || iteradorPreorden == listaPreorden.end()){
+        profundidad = 0;
+        return;
     }
-    return nodoAct;
-} 
+    
+    int i = inordenMap[nodoPadre->getInfo()];
+
+    int profundidadIzq = 0, profundidadDer = 0;
+
+    if (inicio <= i - 1 && iteradorPreorden != listaPreorden.end()){
+        NodoAB<Element>* nuevoNodo = new NodoAB<Element>(*iteradorPreorden);
+        nodoPadre->setHijoIzq(nuevoNodo);
+        iteradorPreorden++;
+        crearPreorden(nuevoNodo, inordenMap, listaPreorden, iteradorPreorden, profundidadIzq, inicio, i - 1);
+    }
+    
+    if (i + 1 <= fin && iteradorPreorden != listaPreorden.end()){
+        NodoAB<Element>* nuevoNodo = new NodoAB<Element>(*iteradorPreorden);
+        nodoPadre->setHijoDer(nuevoNodo);
+        iteradorPreorden++;
+        crearPreorden(nuevoNodo, inordenMap, listaPreorden, iteradorPreorden, profundidadDer, i + 1, fin);
+    }
+    
+    profundidad = 1 + std::max(profundidadIzq, profundidadDer);
+}
 
 template <class Element>
 ArbolBin<Element>& ArbolBin<Element>::operator=(const ArbolBin<Element>& otro) {
@@ -313,3 +308,7 @@ ArbolBin<Element>& ArbolBin<Element>::operator=(const ArbolBin<Element>& otro) {
     return *this;
 }
 
+template <class Element>
+int ArbolBin<Element>::max(int a, int b) {
+    return a > b ? a : b;
+}

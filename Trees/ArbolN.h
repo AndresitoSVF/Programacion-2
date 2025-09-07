@@ -18,7 +18,7 @@ private:
     void copiar(const ArbolN<Element> &otro); // n
     void mostrarPreorden(NodoAN<Element> *nodoActual) const;
     int getProfundidad(NodoAN<Element> * nodo);
-    
+    int max(int a, int b);
 public:
     ArbolN<Element>(); // 1
     ArbolN<Element>(const Element &info, const std::list<ArbolN<Element> > &hijos); // n

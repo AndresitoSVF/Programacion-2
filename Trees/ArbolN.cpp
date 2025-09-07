@@ -99,9 +99,6 @@ std::list<Element> ArbolN<Element>::recorrerNiveles() const {
     return resultado;
 }
 
-
-
-
 template <class Element>
 void ArbolN<Element>::mostrarPreorden() const{
     std::cout << std::endl;std::cout << std::endl;
@@ -129,9 +126,6 @@ void ArbolN<Element>::mostrarPreorden(NodoAN<Element> *nodoActual) const{
     }
 }
 
-
-
-
 template <class Element>
 std::list<Element> ArbolN<Element>::getHojas() const {
     std::list<Element> resultado;
@@ -157,8 +151,6 @@ ArbolN<Element>::ArbolN() : raiz(NULL), profundidad(0)
 {
 
 }
-
-
 
 template <class Element>
 ArbolN<Element>::ArbolN(const Element &info, const std::list<ArbolN<Element> > &hijos) {
@@ -282,7 +274,7 @@ void ArbolN<Element>::insertarSubArbol(const ArbolN<Element> &subArbol) {
     else {
         ant->setHerDer(nodo);
     }
-    this->profundidad = std::max(subArbol.getProfundidad() + 1, this->profundidad);
+    this->profundidad = max(subArbol.getProfundidad() + 1, this->profundidad);
 }
 
 // pos va de 0 a size-1
@@ -347,7 +339,7 @@ int ArbolN<Element>::getProfundidad(NodoAN<Element> * nodo) {
     int profHijo = getProfundidad(nodo->getHijoIzq());
     int profHermano = getProfundidad(nodo->getHerDer());
 
-    return std::max(1 + profHijo, profHermano);
+    return max(1 + profHijo, profHermano);
 }
 
 
@@ -357,4 +349,9 @@ ArbolN<Element>& ArbolN<Element>::operator=(const ArbolN<Element>& otro) {
         copiar(otro);
     }
     return *this;
+}
+
+template <class Element>
+int ArbolN<Element>::max(int a, int b) {
+    return a > b ? a : b;
 }

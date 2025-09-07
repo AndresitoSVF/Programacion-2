@@ -10,6 +10,7 @@ private:
     void eliminar(NodoAB<Element>*& nodoActual, const Element& info);
     NodoAB<Element>* buscarMin(NodoAB<Element>* nodoActual);
     int setProfundidad(NodoAB<Element> *nodo);
+    int max(int a, int b);
 public:
     void insertar(const Element& info);
     void eliminar(const Element& info);

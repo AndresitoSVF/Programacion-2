@@ -16,19 +16,22 @@ protected:
     void recorrerInorden(std::list<Element> &resultado, NodoAB<Element> *nodoActual);
     void recorrerPostorden(std::list<Element> &resultado, NodoAB<Element> *nodoActual);
     void vaciar(NodoAB<Element>* nodo);
-    NodoAB<Element>* crearPreorden(std::unordered_map<Element, int> &inordenMap,
-                                    std::list<Element> &listaPreorden, 
-                                    typename std::list<Element>::iterator &iteradorPreorden,
-                                    int &profundidad,
-                                    int inicio,
-                                    int fin);
-    NodoAB<Element>* crearPostorden(std::unordered_map<Element, int> &inordenMap,
-                                    std::list<Element> &listaPostorden, 
-                                    typename std::list<Element>::reverse_iterator &iteradorPostorden,
-                                    int &profundidad,
-                                    int inicio,
-                                    int fin);
-    
+    void crearPostorden(NodoAB<Element>* nodoPadre,
+                        std::unordered_map<Element, int> &inordenMap,
+                        std::list<Element> &listaPostorden, 
+                        typename std::list<Element>::reverse_iterator &iteradorPostorden,
+                        int &profundidad,
+                        int inicio,
+                        int fin);
+    void crearPreorden(NodoAB<Element>* nodoPadre,
+                        std::unordered_map<Element, int> &inordenMap,
+                        std::list<Element> &listaPreorden, 
+                        typename std::list<Element>::iterator &iteradorPreorden,
+                        int &profundidad,
+                        int inicio,
+                        int fin);
+    int max(int a, int b);
+    void mostrarArbol(NodoAB<Element> *nodo);
 public:
     ArbolBin(); // 1
     ArbolBin(const Element &info, const ArbolBin<Element> &A1, const ArbolBin<Element> &A2); // n
@@ -46,7 +49,7 @@ public:
     void postorden(std::list<Element> &listaInorden, std::list<Element> &listaPostorden); // n
     void preorden(std::list<Element> &listaInorden, std::list<Element> &listaPostorden); // n
     ArbolBin<Element>& operator=(const ArbolBin<Element>& otro);
-    
+    void mostrarArbol();
 };
 #include "ArbolBin.cpp"
 

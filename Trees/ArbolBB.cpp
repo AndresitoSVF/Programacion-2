@@ -90,10 +90,15 @@ int ArbolBB<Element>::setProfundidad(NodoAB<Element> *nodo) {
     if (nodo == NULL) {
         return 0;
     }
-    return 1 + std::max(setProfundidad(nodo->getHijoIzq()), setProfundidad(nodo->getHijoIzq()));
+    return 1 + max(setProfundidad(nodo->getHijoIzq()), setProfundidad(nodo->getHijoIzq()));
 }
 
 template <class Element>
 int ArbolBB<Element>::calcularProfundidad() {
     return setProfundidad(this->raiz);
+}
+
+template <class Element>
+int ArbolBB<Element>::max(int a, int b) {
+    return a > b ? a : b;
 }

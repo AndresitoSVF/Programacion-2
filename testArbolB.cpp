@@ -146,7 +146,7 @@ void testArbolBinComplejo() {
     ArbolBin<int> nodo2(2, hoja4, hoja5);
     ArbolBin<int> nodo3(3, hoja6, ArbolBin<int>());
     ArbolBin<int> arbol(1, nodo2, nodo3);
-    
+    arbol.mostrarArbol();
     // Verificaciones
     assert(arbol.getProfundidad() == 3);
     
