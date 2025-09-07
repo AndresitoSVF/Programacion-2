@@ -4,4 +4,8 @@ a.cpp
 *.o
 *.exe
 *.out
+RUN
+run
+LPC
+ent.txt
 .vscode/
