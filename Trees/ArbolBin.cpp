@@ -297,7 +297,7 @@ void ArbolBin<Element>::crearPreorden(NodoAB<Element>* nodoPadre,
         crearPreorden(nuevoNodo, inordenMap, listaPreorden, iteradorPreorden, profundidadDer, i + 1, fin);
     }
     
-    profundidad = 1 + std::max(profundidadIzq, profundidadDer);
+    profundidad = 1 + max(profundidadIzq, profundidadDer);
 }
 
 template <class Element>
