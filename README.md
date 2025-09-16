@@ -9,7 +9,7 @@
 
   <details>
     <summary style="color: #04F">Información adicional</summary>
-    <p>Estas librerias fueron hechas para usarse en el curso de algoritmos 2,<br> por supuesto
+    <p>Estas librerias fueron hechas para usarse en el curso de algoritmos y programacion 2,<br> por supuesto
       estan full de bugs, <strong>no usar</strong> bajo ningun concepto en algún proyecto.</p>
   </details>
 </div>
