@@ -1,5 +1,5 @@
 <div align="center">
-  <h1 style="font-family:sans-serif">Clases de Algoritmos 2, LPC, Arboles y Grafos en c++</h1>
+  <h1 style="font-family:sans-serif">Clases de Programación 2, LPC, Arboles y Grafos en c++</h1>
   <img src="ico.png" alt="Logo" width="50"><br>
     <ul align="left">
       <li><a href="#LPC" >saltar a LPC</a><br></li>
@@ -9,7 +9,7 @@
 
   <details>
     <summary style="color: #04F">Información adicional</summary>
-    <p>Estas librerias fueron hechas para usarse en el curso de algoritmos 2,<br> por supuesto
+    <p>Estas librerias fueron hechas para usarse en el curso de algoritmos y programacion 2,<br> por supuesto
       estan full de bugs, <strong>no usar</strong> bajo ningun concepto en algún proyecto.</p>
   </details>
 </div>
