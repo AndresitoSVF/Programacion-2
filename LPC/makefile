@@ -1,16 +1,16 @@
-target = RUN
+TARGET = RUN
 CC = g++
 CFLAGS = -march=native -O3 -Wall -Wextra -std=c++98
 LDFLAGS = -lm -lpthread
 
 .PHONY: all clean run cleanall
 
-all: run
+all: $(TARGET)
 	
-run: $(target)
-	./$(target)
+run: $(TARGET)
+	./$(TARGET)
 
-$(target): testNodo.o
+$(TARGET): testNodo.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.o: %.cpp
@@ -20,4 +20,4 @@ clean:
 	rm -f *.o
 
 cleanall: clean
-	rm -f $(target)
+	rm -f $(TARGET)

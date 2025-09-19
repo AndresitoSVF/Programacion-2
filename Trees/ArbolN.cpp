@@ -4,6 +4,7 @@
 #include <list>
 #include <queue>
 #include <stdexcept>
+#include <vector>
 
 template <class Element>
 NodoAN<Element>* ArbolN<Element>::copiarNodos(NodoAN<Element> *raiz) {
@@ -109,11 +110,11 @@ void ArbolN<Element>::mostrarPreorden() const{
 template <class Element>
 void ArbolN<Element>::mostrarPreorden(NodoAN<Element> *nodoActual) const{
     if (nodoActual != NULL) {
-        std::cout << "["<<nodoActual->getInfo()<<"]";
+        std::cout << "[" << nodoActual->getInfo() << "]";
         if ( nodoActual->getHijoIzq() != NULL) {
             NodoAN<Element> *nodo = nodoActual->getHijoIzq();
             while (nodo != NULL) {
-                std::cout << " -> " <<nodo->getInfo();
+                std::cout << " -> " << nodo->getInfo();
                 nodo = nodo->getHerDer();
             }
             std::cout << std::endl;
@@ -211,6 +212,51 @@ void ArbolN<Element>::copiar(const ArbolN<Element> &otro) {
     this->raiz = copiarNodos(otro.raiz);
     this->profundidad = otro.profundidad;
     
+}
+
+
+template <class Element>
+ArbolN<Element> ArbolN<Element>::construirNodo(const Element& elem, const std::unordered_map<Element, std::list<Element> >& mapa) {
+    typename std::unordered_map<Element, std::list<Element> >::const_iterator it = mapa.find(elem);
+    std::list<ArbolN<Element> > hijosArbol;
+    if (it != mapa.end()) {
+        for (typename std::list<Element>::const_iterator itHijo = it->second.begin(); itHijo != it->second.end(); ++itHijo) {
+            hijosArbol.push_back(construirNodo(*itHijo, mapa));
+        }
+    }
+    return ArbolN<Element>(elem, hijosArbol);
+}
+
+template <class Element>
+ArbolN<Element> ArbolN<Element>::construirDesdeMapa(const std::unordered_map<Element, std::list<Element> >& mapa) {
+    if (mapa.empty()) {
+        return ArbolN<Element>();
+    }
+
+    std::set<Element> hijos;
+    for (typename std::unordered_map<Element, std::list<Element> >::const_iterator itMapa = mapa.begin(); itMapa != mapa.end(); ++itMapa) {
+        for (typename std::list<Element>::const_iterator itHijo = itMapa->second.begin(); itHijo != itMapa->second.end(); ++itHijo) {
+            hijos.insert(*itHijo);
+        }
+    }
+
+    Element raiz;
+    bool encontrada = false;
+    for (typename std::unordered_map<Element, std::list<Element> >::const_iterator itMapa = mapa.begin(); itMapa != mapa.end(); ++itMapa) {
+        if (hijos.find(itMapa->first) == hijos.end()) {
+            if (encontrada) {
+                throw std::invalid_argument("El mapa tiene múltiples raíces");
+            }
+            raiz = itMapa->first;
+            encontrada = true;
+        }
+    }
+
+    if (!encontrada) {
+        throw std::invalid_argument("No se encontró la raíz en el mapa");
+    }
+
+    return construirNodo(raiz, mapa);
 }
 
 template <class Element>
@@ -354,4 +400,83 @@ ArbolN<Element>& ArbolN<Element>::operator=(const ArbolN<Element>& otro) {
 template <class Element>
 int ArbolN<Element>::max(int a, int b) {
     return a > b ? a : b;
+}
+
+// calcular el msi
+template <class Element>
+int ArbolN<Element>::msi() {
+    if (this->raiz == NULL) {
+        return 0;
+    }
+
+    int raizI, raizE;
+
+    msi(this->raiz, raizI, raizE);
+
+    return max(raizI, raizE);
+}
+
+// funcion para calcular el msi
+template <class Element>
+void ArbolN<Element>::msi(NodoAN<Element> *nodo, int &incluido, int &excluido) {
+    if (nodo == NULL) {
+        incluido = 0;
+        excluido = 0;
+        return;
+    }
+
+    incluido = nodo->getInfo() + 0;
+    excluido = 0;
+
+    NodoAN<Element>* hijo = nodo->getHijoIzq();
+
+    while (hijo != NULL) {
+        int hijoInc, hijoExc;
+
+        msi(hijo, hijoInc, hijoExc);
+
+        incluido += hijoExc;
+
+        excluido += max(hijoInc, hijoExc);
+
+        hijo = hijo->getHerDer();
+    }
+}
+
+// funcion para calcular el balance
+template <class Element>
+int ArbolN<Element>::balance() {
+    if (this->raiz == NULL) {
+        return 0;
+    }
+
+    int balance = 0;
+    std::queue<std::pair<NodoAN<Element>*, int> > q;
+
+    q.push(std::make_pair(this->raiz, 0));
+
+    while (!q.empty()) {
+        NodoAN<Element>* nodoAct = q.front().first;
+        int profundidad = q.front().second;
+
+        q.pop();
+        
+        NodoAN<Element>* hijo = nodoAct->getHijoIzq();
+
+        if (hijo == NULL) {
+            if (profundidad % 2 == 0) {
+                balance++;
+            } else {
+                balance--;
+            }
+        }
+        else {
+            while (hijo != NULL) {
+                q.push(std::make_pair(hijo, profundidad + 1));
+                hijo = hijo->getHerDer();
+            }
+        }
+    }
+
+    return balance;
 }
