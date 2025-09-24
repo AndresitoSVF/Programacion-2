@@ -29,15 +29,15 @@ void pruebaCopia() {
     Nodo<int> *aux = nodoOriginal.getSig();
     n+=10;
     aux->setSig(new Nodo<int>(n));
-    Nodo<int> nodoCopia(&nodoOriginal);  // Usando el constructor de copia
+    //Nodo<int> nodoCopia(&nodoOriginal);  // Usando el constructor de copia
 
     cout /* << "Nodo original info: " << nodoOriginal.getInfo() */ << endl << endl << endl << endl;
    /*  cout << "Nodo copia info: " << nodoCopia.getInfo() << endl; */
     cout << "Nodo original: " << &nodoOriginal << endl;
-    cout << "Nodo copia: " << &nodoCopia << endl;
+    //cout << "Nodo copia: " << &nodoCopia << endl;
     n = 99;
     aux->setInfo(n);
-    cout << "Nodo original siguiente cambiado: " << &nodoOriginal << endl << "el copia no debe cambiar: " << &nodoCopia << endl;
+    //cout << "Nodo original siguiente cambiado: " << &nodoOriginal << endl << "el copia no debe cambiar: " << &nodoCopia << endl;
 
 
     // Modificamos el original para ver si afecta a la copia
@@ -45,7 +45,7 @@ void pruebaCopia() {
     nodoOriginal.setInfo(n);
     cout << "Después de modificar el original...\n";
     cout << "Nodo original info: " << nodoOriginal.getInfo() << endl;
-    cout << "Nodo copia info (debe permanecer igual): " << nodoCopia.getInfo() << endl << endl;
+    //cout << "Nodo copia info (debe permanecer igual): " << nodoCopia.getInfo() << endl << endl;
 }
 
 void pruebaListaEncadenada() {

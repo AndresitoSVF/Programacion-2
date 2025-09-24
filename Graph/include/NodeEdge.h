@@ -10,8 +10,7 @@ private:
     NodeEdge<T> *next;
     NodeVertex<T> *info;
 public:
-    NodeEdge(/* args */);
-    ~NodeEdge();
+    NodeEdge(const float weight = 0);
     NodeVertex<T> *getInfo();
     NodeEdge<T> *getNext();
     float getWeight();

@@ -11,7 +11,7 @@ private:
     NodeEdge<T> *listAdj; // Adjacency list
 public:
     NodeVertex(/* args */);
-    ~NodeVertex();
+    NodeVertex(const T &info);
     T &getInfo();
     NodeVertex<T> *getNext();
     NodeEdge<T> *getListAdj();

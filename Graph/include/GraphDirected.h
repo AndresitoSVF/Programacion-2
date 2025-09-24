@@ -2,6 +2,14 @@
 #include "NodeVertex.h"
 #include "NodeEdge.h"
 #include <list>
+#include <unordered_map>
+#include <vector>
+
+template<class T>
+class NodeVertex;
+
+template<class T>
+class NodeEdge;
 
 template<class T>
 class GraphDirected
@@ -16,19 +24,19 @@ public:
     T &getFirstNode();
     int getNodeCount();
     int getEdgeCount();
-    void removeNode(T &v);
-    void addNode(T &v, list<T> &outcomingLinks, list<T> &incomingLinks);
-    void addNode(T &v);
-    void removeEdge(T &v)
-    void addEdge(T &v, T& w);
-    void setWeightOfEdge(T &v, T& w, float weight);
-    list<T> &getOutcomingOf(T &v);
-    list<T> &getIncomingOf(T &v);
-    list<T> &getNeighbors(T &v); // outcoming + incoming
+    void removeNode(const T &v);
+    void addNode(const T &v, std::list<std::pair<T, float> > &outcomingLinks, std::list<std::pair<T, float> > &incomingLinks);
+    void addNode(const T &v);
+    void removeEdge(const T &v);
+    void addEdge(const T &v, const T& w, const float weight = 0);
+    void setWeightOfEdge(const T &v, const T& w, const float weight = 0);
+    std::list<T> &getOutcomingOf(const T &v);
+    std::list<T> &getIncomingOf(const T &v);
+    std::list<T> &getNeighbors(const T &v); // outcoming + incoming
     bool isEmpty();
     bool isTree();
-    list<T> &bfs();
-    list<T> &dfs();
+    std::list<T> &bfs();
+    std::list<T> &dfs();
 };
 
 #include "GraphDirected.cpp"
