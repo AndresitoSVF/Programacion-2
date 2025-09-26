@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAPH_D_CPP
+#define GRAPH_D_CPP
 #include "GraphDirected.h"
 #include "NodeVertex.h"
 #include "NodeEdge.h"
@@ -64,4 +65,6 @@ std::list<T> &GraphDirected<T>::bfs(){}
 
 template<class T>
 std::list<T> &GraphDirected<T>::dfs(){}
- */
+*/
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NODE_VERTEX_CPP
+#define NODE_VERTEX_CPP
 #include "NodeVertex.h"
 #include <cstddef>
 
@@ -40,3 +41,4 @@ template<class T>
 void NodeVertex<T>::setListAdj(NodeEdge<T> *listAdj){
     this->listAdj = listAdj;
 }
+#endif

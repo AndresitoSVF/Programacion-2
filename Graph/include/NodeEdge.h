@@ -16,7 +16,7 @@ public:
     float getWeight();
     void setInfo(NodeVertex<T> *info);
     void setNext(NodeEdge<T> *next);
-    void setWeight(T &weight);
+    void setWeight(float weight);
 };
 
 #include "NodeEdge.cpp"

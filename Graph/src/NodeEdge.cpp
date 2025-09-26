@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NODE_EDGE_CPP
+#define NODE_EDGE_CPP
 #include "NodeEdge.h"
 #include <cstddef>
 
@@ -6,7 +7,7 @@ template<class T>
 class NodeVertex;
 
 template<class T>
-NodeEdge<T>::NodeEdge(const float weight) : weight(weight), info(NULL), next(NULL){}
+NodeEdge<T>::NodeEdge(const float weight) : weight(weight), next(NULL), info(NULL){}
 
 template<class T>
 NodeVertex<T> *NodeEdge<T>::getInfo(){
@@ -34,7 +35,7 @@ void NodeEdge<T>::setNext(NodeEdge<T> *next){
 }
 
 template<class T>
-void NodeEdge<T>::setWeight(T &weight){
+void NodeEdge<T>::setWeight(float weight){
     this->weight = weight;
 }
-
+#endif
