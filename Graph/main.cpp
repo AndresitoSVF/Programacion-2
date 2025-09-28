@@ -10,6 +10,7 @@ CB
 CA
 ...
 */
+
 using namespace std;
 unordered_map<char, list<pair<char, float> > > leerEntradaUsandoMaps() {
     unordered_map<char, list<pair<char, float> > > m;
@@ -29,7 +30,7 @@ int main() {
     unordered_map<char, list<pair<char, float> > > m = leerEntradaUsandoMaps();
     GraphUndirected<char> g(m);
     list<pair<char, char> > bridges = g.getBridges();
-    //g.show();
+    g.show();
     for (auto it = bridges.begin(); it != bridges.end(); it++) {
         cout << it->first << " " << it->second << endl;
     }

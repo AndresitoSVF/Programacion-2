@@ -20,8 +20,9 @@ private:
     NodeVertex<T> *firstNode;
     int nodeCount, edgeCount;
     
+
     //Helpers
-    void removeConnection(NodeVertex<T> *v, NodeVertex<T> *w); // elimina la conexion v -> w
+    bool removeConnection(NodeVertex<T> *v, NodeVertex<T> *w); // elimina la conexion v -> w
     void createConnection(NodeVertex<T> *v, NodeVertex<T> *w, float weight); // hace la conexion v -> w.
     void dfs(const T &initialNode, std::unordered_map<T, bool> &visited, std::list<T> &result) const;
     void copy(const GraphUndirected<T> &other); // copia a este el otro grafo; no vacia antes de hacerlo
@@ -31,8 +32,11 @@ private:
     void addEdge(NodeVertex<T> *v, NodeVertex<T> *w, float weight = 0);
     std::list<T> findPathBetween(const T &v, const T &w, std::list<std::pair<NodeVertex<T>*,NodeVertex<T>*> > &exceptions);
     bool existPathBetween(const T &initialNode, const T &finalNode, std::set<std::pair<T, T> > &exceptions);
+    void removeEdge(NodeVertex<T> *v, NodeVertex<T> *w);
 
 public:
+
+
     // constructors and destructors
     GraphUndirected(); //
     GraphUndirected(GraphUndirected<T> &other); //
@@ -40,11 +44,13 @@ public:
     ~GraphUndirected(); //
     void clear(); //
 
+
     // node operations
     void removeNode(const T &v); //
     void addNode(const T &v, std::list<std::pair<T, float> > &links);
     void addNode(const T &v);
     bool existNode() const;
+
 
     // edge operations
     void removeEdge(const T &v, const T &w);
@@ -60,6 +66,7 @@ public:
     std::list<T> getNeighbors(const T &v) const; // outcoming + incoming
     float getWeightOfEdge(const T &v, const T& w); //
 
+
     // utility and traversal (esto ultimo creo que es visitar todos los nodos)    
     bool isEmpty() const; //
     bool isTree(); 
@@ -71,7 +78,8 @@ public:
     std::list<std::pair<T,T> > getBridges();
     std::list<T> findPathBetween(const T &v, const T &w);
 
-    // operadores
+
+    // operators
     void operator = (GraphUndirected &g); //
 };
 

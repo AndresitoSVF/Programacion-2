@@ -94,40 +94,29 @@ void GraphUndirected<T>::createConnection(NodeVertex<T> *v, NodeVertex<T> *w, fl
 // OK
 // eliminar v -> w
 template<class T>
-void GraphUndirected<T>::removeConnection(NodeVertex<T> *v, NodeVertex<T> *w){
-    if (v == NULL || w == NULL) {
-        std::cout << "removeConnection: Vertice nulo" << std::endl;
-        return;
-    }
-    
-    NodeEdge<T> *currentEdge = v->getListAdj();
-    NodeEdge<T> *previousEdge = NULL;
-    
-    // vamos recorriendo los vertices hasta llegar al que queremos
-    while (currentEdge != NULL) {
+bool GraphUndirected<T>::removeConnection(NodeVertex<T> *v, NodeVertex<T> *w){
+    NodeEdge<T> *current = v->getListAdj();
+    NodeEdge<T> *previous = NULL;
 
-        if (currentEdge->getInfo() == w){
-            if(previousEdge == NULL) {
-                // cuando es el primer elemento
-                v->setListAdj(currentEdge->getNext());
-            }
-            else {
-                // cualquier otro caso
-                previousEdge->setNext(currentEdge->getNext());
-            }
-            delete currentEdge;
-            return;
-        }
+    while (current != NULL && current->getInfo() != w) {
+        previous = current;
+        current = current->getNext();
+    }
 
-        previousEdge = currentEdge;
-        currentEdge = currentEdge->getNext();
+    if (current == NULL) {
+        // No se encontro la conexion.
+        return false;
     }
-    
-    // si current es null entonces no lo encontró
-    if (currentEdge == NULL) {
-        //throw std::out_of_range("removeEdge(NodeVertex<T> *v, NodeVertex<T> *w): Arco no encontrado");
-        std::cout << "removeEdge(NodeVertex<T> *v, NodeVertex<T> *w): Arco no encontrado";
+
+    if (previous == NULL) {
+        // es el primero en la lista.
+        v->setListAdj(current->getNext());
+    } else {
+        previous->setNext(current->getNext());
     }
+
+    delete current;
+    return true;
     
 }
 
@@ -168,7 +157,7 @@ void GraphUndirected<T>::addEdge(NodeVertex<T> *v, NodeVertex<T> *w, float weigh
     
     if (v == NULL || w == NULL) {
         //throw std::out_of_range("addEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los vetices");
-        std::cout << "addEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los vetices" << std::endl;
+        std::cout << "addEdge(NodeVertex<T> *v, NodeVertex<T> *w, float weight): No se ha encontrado alguno de los vetices" << std::endl;
         return;
     }
 
@@ -304,6 +293,25 @@ bool GraphUndirected<T>::existPathBetween(const T &initialNode, const T &finalNo
     return false;
 }
 
+// OK
+template<class T>
+void GraphUndirected<T>::removeEdge(NodeVertex<T> *v, NodeVertex<T> *w) {
+    if (v == NULL || w == NULL) {
+        return;
+    }
+
+    // Usar una función auxiliar para eliminar la conexión en una dirección
+    // y devolver si se eliminó o no, para saber si decrementar el contador.
+    bool deletedVW = removeConnection(v, w);
+    bool deletedWV = removeConnection(w, v);
+
+    // Si se eliminó al menos una conexión, se decremente el contador de aristas.
+    // Esto es especialmente útil para evitar doble decremento en los ciclos propios.
+    if (deletedWV || deletedVW) {
+        edgeCount--;
+    }
+}
+
 /* 
 ****************************
 Constructors and destructors
@@ -320,33 +328,65 @@ GraphUndirected<T>::GraphUndirected(GraphUndirected<T> &other) : firstNode(NULL)
     copy(other);
 }
 
-//~OK
+// OK
 template<class T>
 GraphUndirected<T>::GraphUndirected(const std::unordered_map<T, std::list<std::pair<T, float > > >& mapa) : firstNode(NULL), nodeCount(0), edgeCount(0) {
     // Crear todos los nodos y mapear.
     std::unordered_map<T, NodeVertex<T> *> nodes;
-    for (typename std::unordered_map<T, std::list<std::pair<T, float > > >::const_iterator it = mapa.begin(); it != mapa.end(); it++) {
-        nodes[it->first] = createAndReturnNode(it->first);
+
+    for (const auto& pair : mapa) {
+        if (nodes.find(pair.first) == nodes.end()) {
+            nodes[pair.first] = createAndReturnNode(pair.first);
+        }
+        for (const auto& edge_pair : pair.second) {
+            if (nodes.find(edge_pair.first) == nodes.end()) {
+                nodes[edge_pair.first] = createAndReturnNode(edge_pair.first);
+            }
+        }
     }
     
     // Crear links.
-    for (typename std::unordered_map<T, std::list<std::pair<T, float > > >::const_iterator it = mapa.begin(); it != mapa.end(); it++) {
-        NodeVertex<T> *v = nodes[it->first];
+    std::set<std::pair<T,T> > addedEdges;
+    for (const auto& pair : mapa) {
+        T vName = pair.first;
+        NodeVertex<T> *v = nodes[vName];
 
-        for (typename std::list<std::pair<T, float> >::const_iterator itl = it->second.begin(); itl != it->second.end(); itl++) {
-            T nodeName = itl->first;
-            float weight = itl->second;
-            NodeVertex<T>* w;
-            if (nodes.find(nodeName) == nodes.end())
-            {
-                nodes[nodeName] = createAndReturnNode(nodeName);
-                //std::cout << "Constructor: Nodo destino no encontrado: " << nodeName << std::endl;
+        // lista
+        for (const auto& pairEdge : pair.second) {
+            T wName = pairEdge.first;
+            float weight = pairEdge.second;
+            NodeVertex<T> *w = nodes[wName];
+
+            if (v == w) {
+                if (addedEdges.find({vName, vName}) == addedEdges.end()) {
+                    createConnection(v, w, weight);
+                    addedEdges.insert({vName, vName});
+                    edgeCount++;
+                }
             }
-            w = nodes[nodeName];
-            addEdge(v, w, weight);
+            else {
+                // cuando no es un bucle
+                std::pair<T,T> edge;
+    
+                if (vName < wName) {
+                    edge = {vName, wName};
+                }
+                else {
+                    edge = {wName, vName};
+                }
+    
+                if (addedEdges.find(edge) == addedEdges.end()) {
+                    // no esta creado
+                    createConnection(v, w, weight);
+                    createConnection(w, v, weight);
+    
+                    addedEdges.insert(edge);
+                    edgeCount++;
+                }
+            }
+
         }
     }
-
 }
 
 // OK
@@ -385,7 +425,7 @@ Node ops.
 *********
 */
 
-// ~OK
+// OK
 template<class T>
 void GraphUndirected<T>::removeNode(const T &v){
     NodeVertex<T> *currentVertex = firstNode;
@@ -406,15 +446,8 @@ void GraphUndirected<T>::removeNode(const T &v){
     NodeEdge<T> *currentEdge = currentVertex->getListAdj();
     while(currentEdge != NULL) {
         NodeEdge<T> *nextEdge = currentEdge->getNext();
-        //eliminar desde el vecino al currentVertex.
-        if (currentEdge->getInfo() != NULL && currentEdge->getInfo() != currentVertex) {
-            removeConnection(currentEdge->getInfo(), currentVertex);
-        }
-        
-        // borrar desde el currentVertex al vecino.
-        delete currentEdge;
+        removeEdge(currentVertex, currentEdge->getInfo());
         currentEdge = nextEdge;
-        edgeCount --;
     }
     
     // eliminar el vertice
@@ -429,7 +462,7 @@ void GraphUndirected<T>::removeNode(const T &v){
     nodeCount --;
 }
 
-// ~OK
+// OK
 template<class T>
 void GraphUndirected<T>::addNode(const T &v, std::list<std::pair<T, float> > &links){
     if (this->findNode(v) != NULL) {
@@ -442,26 +475,16 @@ void GraphUndirected<T>::addNode(const T &v, std::list<std::pair<T, float> > &li
     NodeVertex<T> *newNode = new NodeVertex<T>(v);
     newNode->setNext(firstNode);
     firstNode = newNode;
+    nodeCount++;
     
     // formar enlaces:
     for (typename std::list<std::pair<T, float> >::iterator it = links.begin(); it != links.end(); it++) {
         T nodeInfo = it->first;
         float weight = it->second;
         
-        NodeVertex<T>* node = findNode(nodeInfo);
-        if (node != NULL) {
-            createConnection(newNode, node, weight);
-            createConnection(node, newNode, weight);
-            edgeCount++;
-        }
-        else {
-            //throw std::out_of_range("addNode(const T &v, std::list<std::pair<T, float> > &links): Intentó hacer un link a un nodo inexistente");
-            std::cout << "addNode(const T &v, std::list<std::pair<T, float> > &links): Intentó hacer un link a un nodo inexistente" << std::endl;
-            continue;
-        }
+        addEdge(v, nodeInfo, weight);
     }
     
-    nodeCount++;
 }
 
 // OK
@@ -490,54 +513,16 @@ Edge ops.
 // OK
 template<class T>
 void GraphUndirected<T>::removeEdge(const T &v, const T &w){
-    NodeVertex<T> *ptrV = NULL, *ptrW = NULL;
-    NodeVertex<T> *currentVertex = firstNode;
-    
-    while (currentVertex != NULL && !(ptrV != NULL && ptrW != NULL)) {
-        // 2 if separados, añadimos soporte a grafos ciclicos
-        if (currentVertex->getInfo() == v) {
-            ptrV = currentVertex;
-        }
-        if (currentVertex->getInfo() == w) {
-            ptrW = currentVertex;
-        }
-        currentVertex = currentVertex->getNext();
-    }
-    
-    if (ptrV == NULL || ptrW == NULL) {
-        //throw std::out_of_range("removeEdge(const T &v, const T &w): No se ha encontrado alguno de los vetices");
-        std::cout << "removeEdge(const T &v, const T &w): No se ha encontrado alguno de los vetices" << std::endl;
-        return;
-    }
-    
-    if (ptrW == ptrV) {
-        removeConnection(ptrV, ptrW);
-    }
-    else {
-        removeConnection(ptrW, ptrV);
-        removeConnection(ptrV, ptrW);
-    }
-    // ya habiendo encontrado los 2 vertices se debe buscar y eliminar el enlace.
-    
-    edgeCount--;
+    NodeVertex<T> *ptrV = findNode(v);
+    NodeVertex<T> *ptrW = findNode(w);
+    removeEdge(ptrV, ptrW);
 }
 
 // OK
 template<class T>
 void GraphUndirected<T>::addEdge(const T &v, const T& w, float weight){
-    NodeVertex<T> *ptrV = NULL, *ptrW = NULL;
-    NodeVertex<T> *currentVertex = firstNode;
-    
-    while (currentVertex != NULL && !(ptrV != NULL && ptrW != NULL)) {
-        // 2 if separados, añadimos soporte a grafos ciclicos nahshe
-        if (currentVertex->getInfo() == v) {
-            ptrV = currentVertex;
-        }
-        if (currentVertex->getInfo() == w) {
-            ptrW = currentVertex;
-        }
-        currentVertex = currentVertex->getNext();
-    }
+    NodeVertex<T> *ptrV = findNode(v);
+    NodeVertex<T> *ptrW = findNode(w);
     
     if (ptrV == NULL || ptrW == NULL) {
         //throw std::out_of_range("addEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los vetices");
@@ -545,97 +530,52 @@ void GraphUndirected<T>::addEdge(const T &v, const T& w, float weight){
         return;
     }
 
-    // Check for existing edge
-    NodeEdge<T> *current = ptrV->getListAdj();
-    while (current != NULL) {
-        if (current->getInfo() == ptrW) {
-            //throw std::out_of_range("addEdge(const T &v, const T& w, const float weight): Esta conexion ya existe");
-            return;
-        }
-        current = current->getNext();
-    }
-    
-        
-    if (ptrV == ptrW) {
-        createConnection(ptrV, ptrW, weight); 
-    } else {
-        createConnection(ptrV, ptrW, weight); // v -> w
-        createConnection(ptrW, ptrV, weight); // w -> v
-    }
-    
-    edgeCount++;
+    addEdge(ptrV, ptrW, weight);
 }
 
-// ~OK
+// OK
 template<class T>
 void GraphUndirected<T>::setWeightOfEdge(const T &v, const T& w, float weight){
-    NodeVertex<T> *ptrV = NULL, *ptrW = NULL;
-    NodeVertex<T> *currentVertex = firstNode;
-    
-    while (currentVertex != NULL && !(ptrV != NULL && ptrW != NULL)) {
-        // 2 if separados, añadimos soporte a grafos ciclicos nahshe
-        if (currentVertex->getInfo() == v) {
-            ptrV = currentVertex;
-        }
-        if (currentVertex->getInfo() == w) {
-            ptrW = currentVertex;
-        }
-        currentVertex = currentVertex->getNext();
-    }
+    NodeVertex<T> *ptrV = findNode(v);
+    NodeVertex<T> *ptrW = findNode(w);
     
     if (ptrV == NULL || ptrW == NULL) {
         //throw std::out_of_range("setWeightOfEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los vetices");
-        std::cout << "setWeightOfEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los vetices" << std::endl;
+        std::cout << "setWeightOfEdge: No se ha encontrado alguno de los vetices" << std::endl;
         return;
     }
     
-    // ahora buscamos el arco y actualizamos
-    if (ptrV != ptrW) {
-        // v -> w
-        NodeEdge<T> *edgeVW = ptrV->getListAdj();
-        while (edgeVW != NULL) {
-            if (edgeVW->getInfo() == ptrW) {
-                // encontrado el enlace v -> w 
-                break;
-            }
-            edgeVW = edgeVW->getNext();
+    // para ciclicos
+    if (ptrV == ptrW) {
+        NodeEdge<T> *edgeVV = ptrV->getListAdj();
+        while (edgeVV != NULL && edgeVV->getInfo() != ptrV) {
+            edgeVV = edgeVV->getNext();
         }
-        
-        // w -> v
-        NodeEdge<T> *edgeWV = ptrW->getListAdj();
-        while (edgeWV != NULL) {
-            if (edgeWV->getInfo() == ptrV) {
-                // encontrado el enlace w -> v 
-                break;
-            }
-            edgeWV = edgeWV->getNext();
+        if (edgeVV != NULL) {
+            edgeVV->setWeight(weight);
+        } else {
+            std::cout << "setWeightOfEdge: No se ha encontrado el ciclo" << std::endl;
         }
-        
-        if (edgeVW == NULL || edgeWV == NULL) {
-            //throw std::out_of_range("setWeightOfEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los edges");
-            std::cout << "setWeightOfEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los edges" << std::endl;
-            return;
-        }
-        edgeWV->setWeight(weight);
-        edgeVW->setWeight(weight);
+        return;
     }
-    else {
-        NodeEdge<T> *edgeVW = ptrV->getListAdj();
-        while (edgeVW != NULL) {
-            if (edgeVW->getInfo() == ptrW) {
-                // encontrado el enlace v -> w 
-                break;
-            }
-            edgeVW = edgeVW->getNext();
-        }
 
-        if (edgeVW == NULL) {
-            //throw std::out_of_range("setWeightOfEdge(const T &v, const T& w, const float weight): No se ha encontrado el edge");
-            std::cout << "setWeightOfEdge(const T &v, const T& w, const float weight): No se ha encontrado el edge" << std::endl;
-            return;
-        }
+    // Para no ciclicos
+    NodeEdge<T> *edgeVW = ptrV->getListAdj();
+    while (edgeVW != NULL && edgeVW->getInfo() != ptrW) {
+        edgeVW = edgeVW->getNext();
+    }
 
+    NodeEdge<T> *edgeWV = ptrW->getListAdj();
+    while (edgeWV != NULL && edgeWV->getInfo() != ptrV) {
+        edgeWV = edgeWV->getNext();
+    }
+    
+
+    if (edgeVW != NULL && edgeWV != NULL) {
         edgeVW->setWeight(weight);
+        edgeWV->setWeight(weight);
+    } else {
+        std::cout << "setWeightOfEdge: Uno o ambos enlaces no se encontraron" << std::endl;
     }
     
 }
@@ -682,7 +622,7 @@ std::list<T> GraphUndirected<T>::getNeighbors(const T &v) const {
     
     return result;
     
-} // outcoming + incoming
+}
 
 // OK
 template<class T>
@@ -697,54 +637,26 @@ T &GraphUndirected<T>::getFirstNode() const{
 // OK
 template<class T>
 float GraphUndirected<T>::getWeightOfEdge(const T &v, const T& w){
-    NodeVertex<T> *ptrV = NULL, *ptrW = NULL;
-    NodeVertex<T> *currentVertex = firstNode;
-    
-    while (currentVertex != NULL && !(ptrV != NULL && ptrW != NULL)) {
-        // 2 if separados, añadimos soporte a grafos ciclicos nahshe
-        if (currentVertex->getInfo() == v) {
-            ptrV = currentVertex;
-        }
-        if (currentVertex->getInfo() == w) {
-            ptrW = currentVertex;
-        }
-        currentVertex = currentVertex->getNext();
-    }
+    NodeVertex<T> *ptrV = findNode(v);
+    NodeVertex<T> *ptrW = findNode(w);
     
     if (ptrV == NULL || ptrW == NULL) {
-        //throw std::out_of_range("getWeightOfEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los vetices");
-        std::cout << "getWeightOfEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los vetices" << std::endl;
+        throw std::out_of_range("getWeightOfEdge: No se ha encontrado alguno de los vetices");
+        //std::cout << "getWeightOfEdge(const T &v, const T& w, const float weight): No se ha encontrado alguno de los vetices" << std::endl;
     }
     
-    // ahora buscamos el arco y actualizamos
-    
+    // ahora buscamos el arco
     // v -> w
     NodeEdge<T> *edgeVW = ptrV->getListAdj();
-    while (edgeVW != NULL) {
-        if (edgeVW->getInfo() == ptrW) {
-            // encontrado el enlace v -> w 
-            break;
-        }
+    while (edgeVW != NULL && edgeVW->getInfo() != ptrW) {
         edgeVW = edgeVW->getNext();
     }
-    
-    // con encontrar el v -> w ya está bien
 
-    /* // w -> v
-    NodeEdge<T> *edgeWV = ptrW->getListAdj();
-    while (edgeW != NULL) {
-        if (edgeWV->getInfo() == ptrV) {
-            // encontrado el enlace w -> v 
-            break;
-        }
-        edgeW = edgeWV->getNext();
-    } */
-    
     if (edgeVW == NULL) {
-        //throw std::out_of_range("getWeightOfEdge(const T &v, const T& w): No se ha encontrado el edge v -> w");
-        std::cout << "getWeightOfEdge(const T &v, const T& w): No se ha encontrado el edge v -> w" << std::endl;
+        throw std::out_of_range("getWeightOfEdge: No se ha encontrado el edge v -> w");
+        //std::cout << "getWeightOfEdge(const T &v, const T& w): No se ha encontrado el edge v -> w" << std::endl;
+
     }
-    
     return edgeVW->getWeight();
 }
 
@@ -867,6 +779,25 @@ void GraphUndirected<T>::dfs(const T &initialNode, std::unordered_map<T, bool> &
         }
         neighbors.pop_front();
     }
+}
+
+template<class T>
+std::list<T> GraphUndirected<T>::dfs() const {
+    std::list<T> result;
+    std::unordered_map<T, bool> visited;
+
+    // llenar el mapa y validar que el nodo inicial se encuentra
+    NodeVertex<T> *current = firstNode;
+    while (current != NULL) {
+        visited[current->getInfo()] = false;
+        current = current->getNext();
+    }
+
+    if (visited.find(getFirstNode()) != visited.end()) {
+
+        dfs(getFirstNode(), visited, result);
+    }
+    return result;
 }
 
 // OK
@@ -1004,6 +935,7 @@ std::list<std::pair<T,T> > GraphUndirected<T>::getBridges() {
     return result;
 }
 
+// OK
 template<class T>
 std::list<T> GraphUndirected<T>::findPathBetween(const T &v, const T &w) {
     return findPathBetween(v, w, std::list<std::pair<NodeVertex<T>*,NodeVertex<T>*> >());
@@ -1015,7 +947,6 @@ std::list<T> GraphUndirected<T>::findPathBetween(const T &v, const T &w) {
 Operators
 *********
 */
-
 
 // OK
 template<class T>
